@@ -1,0 +1,15 @@
+{
+  "name": "absen-outsourcing",
+  "version": "1.0.0",
+  "description": "Employee Attendance Management System",
+  "main": "api/setup.js",
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "scripts": {
+    "start": "node api/setup.js"
+  }
+}
