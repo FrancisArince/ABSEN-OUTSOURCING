@@ -1,22 +1,42 @@
 const db = require('./db');
+const url = require('url');
+
+const parseBody = (req) => new Promise((resolve) => {
+  if (req.body) return resolve(req.body);
+  let body = '';
+  req.on('data', chunk => { body += chunk; });
+  req.on('end', () => {
+    try {
+      resolve(body ? JSON.parse(body) : {});
+    } catch {
+      resolve({});
+    }
+  });
+});
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.statusCode = 200;
+    return res.end();
   }
+
+  const query = url.parse(req.url, true).query;
 
   try {
     if (req.method === 'GET') {
       const result = await db.query('SELECT * FROM attendances');
-      return res.status(200).json({ success: true, attendances: result.rows });
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true, attendances: result.rows }));
     }
 
     if (req.method === 'POST') {
-      const { action, id, user_id, date, check_in_time, check_out_time, distance, latitude_longitude, face_match, status } = req.body;
+      const body = await parseBody(req);
+      const { action, id, user_id, date, check_in_time, check_out_time, distance, latitude_longitude, face_match, status } = body;
 
       if (action === 'checkin') {
         await db.query(
@@ -24,7 +44,8 @@ module.exports = async (req, res) => {
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
           [id, user_id, date, check_in_time, distance, latitude_longitude, face_match, status]
         );
-        return res.status(200).json({ success: true });
+        res.statusCode = 200;
+        return res.end(JSON.stringify({ success: true }));
       }
 
       if (action === 'checkout') {
@@ -34,18 +55,22 @@ module.exports = async (req, res) => {
            WHERE user_id = $2 AND date = $3`,
           [check_out_time, user_id, date]
         );
-        return res.status(200).json({ success: true });
+        res.statusCode = 200;
+        return res.end(JSON.stringify({ success: true }));
       }
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.query;
+      const id = query.id;
       await db.query('DELETE FROM attendances WHERE id = $1', [id]);
-      return res.status(200).json({ success: true });
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true }));
     }
 
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    res.statusCode = 405;
+    res.end(JSON.stringify({ success: false, error: 'Method not allowed' }));
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.statusCode = 500;
+    res.end(JSON.stringify({ success: false, error: error.message }));
   }
 };

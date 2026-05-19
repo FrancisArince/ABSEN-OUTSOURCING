@@ -1,13 +1,31 @@
 const db = require('./db');
+const url = require('url');
+
+const parseBody = (req) => new Promise((resolve) => {
+  if (req.body) return resolve(req.body);
+  let body = '';
+  req.on('data', chunk => { body += chunk; });
+  req.on('end', () => {
+    try {
+      resolve(body ? JSON.parse(body) : {});
+    } catch {
+      resolve({});
+    }
+  });
+});
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.statusCode = 200;
+    return res.end();
   }
+
+  const query = url.parse(req.url, true).query;
 
   try {
     if (req.method === 'GET') {
@@ -18,11 +36,13 @@ module.exports = async (req, res) => {
         }
         return user;
       });
-      return res.status(200).json({ success: true, users });
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true, users }));
     }
 
     if (req.method === 'POST') {
-      const { id, name, email, password, role, position, shift, avatar, photo, faceDescriptor } = req.body;
+      const body = await parseBody(req);
+      const { id, name, email, password, role, position, shift, avatar, photo, faceDescriptor } = body;
       const descStr = faceDescriptor ? JSON.stringify(faceDescriptor) : null;
       
       await db.query(
@@ -30,24 +50,29 @@ module.exports = async (req, res) => {
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [id, name, email, password, role, position || null, shift || 'siang', avatar, photo || null, descStr]
       );
-      return res.status(200).json({ success: true });
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true }));
     }
 
     if (req.method === 'PUT') {
-      // Used to update shift
-      const { id, shift } = req.body;
+      const body = await parseBody(req);
+      const { id, shift } = body;
       await db.query('UPDATE users SET shift = $1 WHERE id = $2', [shift, id]);
-      return res.status(200).json({ success: true });
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true }));
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.query;
+      const id = query.id;
       await db.query('DELETE FROM users WHERE id = $1', [id]);
-      return res.status(200).json({ success: true });
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true }));
     }
 
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    res.statusCode = 405;
+    res.end(JSON.stringify({ success: false, error: 'Method not allowed' }));
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.statusCode = 500;
+    res.end(JSON.stringify({ success: false, error: error.message }));
   }
 };

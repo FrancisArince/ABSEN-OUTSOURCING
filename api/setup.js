@@ -1,6 +1,16 @@
 const db = require('./db');
 
 module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
+
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 200;
+    return res.end();
+  }
+
   try {
     // 1. Create tables
     await db.query(`
@@ -153,15 +163,11 @@ module.exports = async (req, res) => {
       }
     }
 
-    if (res) {
-      res.status(200).json({ success: true, message: "Database initialized successfully" });
-    } else {
-      console.log("Database initialized successfully");
-    }
+    res.statusCode = 200;
+    res.end(JSON.stringify({ success: true, message: "Database initialized successfully" }));
   } catch (error) {
     console.error("DB Setup Error:", error);
-    if (res) {
-      res.status(500).json({ success: false, error: error.message });
-    }
+    res.statusCode = 500;
+    res.end(JSON.stringify({ success: false, error: error.message }));
   }
 };
