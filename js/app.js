@@ -180,6 +180,33 @@ class AppDatabase {
         });
         this._serverCalendars = JSON.parse(JSON.stringify(this.calendars));
       }
+
+      // Load global settings from database
+      const resSettings = await fetch('/api/settings').then(r => r.json());
+      if (resSettings.success && resSettings.settings) {
+        const s = resSettings.settings;
+        if (s.office_lat) {
+          OFFICE_LAT = parseFloat(s.office_lat);
+          localStorage.setItem("admin_office_lat", s.office_lat);
+        }
+        if (s.office_lng) {
+          OFFICE_LNG = parseFloat(s.office_lng);
+          localStorage.setItem("admin_office_lng", s.office_lng);
+        }
+        if (s.shift_config) {
+          SHIFT_CONFIG = JSON.parse(s.shift_config);
+          localStorage.setItem("admin_shift_config", s.shift_config);
+        }
+        // Force refresh UI values if inputs are loaded
+        if (DOM.adminOfficeLat) DOM.adminOfficeLat.value = OFFICE_LAT;
+        if (DOM.adminOfficeLng) DOM.adminOfficeLng.value = OFFICE_LNG;
+        if (DOM.adminShiftSiangIn) {
+          DOM.adminShiftSiangIn.value = SHIFT_CONFIG.siang.in;
+          DOM.adminShiftSiangOut.value = SHIFT_CONFIG.siang.out;
+          DOM.adminShiftMalamIn.value = SHIFT_CONFIG.malam.in;
+          DOM.adminShiftMalamOut.value = SHIFT_CONFIG.malam.out;
+        }
+      }
     } catch (err) {
       console.error("Backend sync failed:", err);
     }
@@ -3142,6 +3169,13 @@ function setupEventListeners() {
         localStorage.setItem("admin_office_lat", lat);
         localStorage.setItem("admin_office_lng", lng);
         
+        // Sync to backend settings database
+        fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ office_lat: lat, office_lng: lng })
+        }).catch(err => console.error("Failed to sync office GPS settings:", err));
+        
         state.currentLat = lat;
         state.currentLng = lng;
         
@@ -3184,6 +3218,14 @@ function setupEventListeners() {
       SHIFT_CONFIG.malam.out = DOM.adminShiftMalamOut.value || "04:00";
       
       localStorage.setItem("admin_shift_config", JSON.stringify(SHIFT_CONFIG));
+      
+      // Sync to backend settings database
+      fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shift_config: SHIFT_CONFIG })
+      }).catch(err => console.error("Failed to sync shift config settings:", err));
+      
       showToast("Shift Disimpan", "Pengaturan jam kerja untuk Shift Siang & Malam berhasil diperbarui.", "success");
     });
   }

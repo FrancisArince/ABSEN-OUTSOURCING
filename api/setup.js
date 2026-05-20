@@ -63,6 +63,24 @@ module.exports = async (req, res) => {
       );
     `);
 
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key VARCHAR(50) PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    `);
+
+    // Seed settings if empty
+    const settingsCheck = await db.query('SELECT COUNT(*) FROM settings');
+    if (parseInt(settingsCheck.rows[0].count) === 0) {
+      await db.query(`
+        INSERT INTO settings (key, value) VALUES 
+        ('office_lat', '-0.626305'),
+        ('office_lng', '114.589139'),
+        ('shift_config', '{"siang":{"in":"08:00","out":"16:00"},"malam":{"in":"20:00","out":"04:00"}}')
+      `);
+    }
+
     // 2. Seed default users if empty
     const userCheck = await db.query('SELECT COUNT(*) FROM users');
     if (parseInt(userCheck.rows[0].count) === 0) {
