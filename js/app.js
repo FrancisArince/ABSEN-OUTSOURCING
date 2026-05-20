@@ -155,7 +155,21 @@ class AppDatabase {
 
       const resJournals = await fetch('/api/journal').then(r => r.json());
       if (resJournals.success) {
-        this.journals = resJournals.journals;
+        // Automatically clean up orphaned journals that have no matching attendance record
+        const validJournals = resJournals.journals.filter(j => 
+          this.attendances.some(a => a.user_id === j.user_id && a.date === j.date)
+        );
+        
+        const orphaned = resJournals.journals.filter(j => 
+          !this.attendances.some(a => a.user_id === j.user_id && a.date === j.date)
+        );
+        
+        for (const oj of orphaned) {
+          console.warn(`Cleaning up orphaned journal ${oj.id} (user: ${oj.user_id}, date: ${oj.date})`);
+          fetch(`/api/journal?id=${oj.id}`, { method: 'DELETE' }).catch(err => console.error(err));
+        }
+
+        this.journals = validJournals;
         this._serverJournals = JSON.parse(JSON.stringify(this.journals));
       }
 
@@ -288,6 +302,12 @@ class AppDatabase {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'verify', ...j })
         });
+      }
+    }
+    for (const sj of this._serverJournals) {
+      const stillExists = this.journals.some(j => j.id === sj.id);
+      if (!stillExists) {
+        await fetch(`/api/journal?id=${sj.id}`, { method: 'DELETE' });
       }
     }
 
@@ -2053,6 +2073,11 @@ function renderAdminTable() {
 
 window.deleteAttendanceLog = function(id) {
   if (!confirm('Apakah Anda yakin ingin menghapus data laporan kehadiran ini secara permanen?')) return;
+  const log = db.attendances.find(a => a.id === id);
+  if (log) {
+    // Delete corresponding journal
+    db.journals = db.journals.filter(j => !(j.user_id === log.user_id && j.date === log.date));
+  }
   db.attendances = db.attendances.filter(a => a.id !== id);
   db.save();
   renderAdminTable();
@@ -2060,7 +2085,7 @@ window.deleteAttendanceLog = function(id) {
   renderAdminRekapJabatan();
   plotAdminMapRecords();
   renderAdminCharts();
-  showToast("Log Dihapus", "Log kehadiran berhasil dihapus secara permanen.", "info");
+  showToast("Log Dihapus", "Log kehadiran dan jurnal pekerjaan berhasil dihapus secara permanen.", "info");
 };
 
 // Generate premium charts using Chart.js

@@ -16,7 +16,7 @@ const parseBody = (req) => new Promise((resolve) => {
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json');
 
@@ -24,6 +24,8 @@ module.exports = async (req, res) => {
     res.statusCode = 200;
     return res.end();
   }
+
+  const query = url.parse(req.url, true).query;
 
   try {
     if (req.method === 'GET') {
@@ -62,6 +64,13 @@ module.exports = async (req, res) => {
         res.statusCode = 200;
         return res.end(JSON.stringify({ success: true }));
       }
+    }
+
+    if (req.method === 'DELETE') {
+      const id = query.id;
+      await db.query('DELETE FROM journals WHERE id = $1', [id]);
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true }));
     }
 
     res.statusCode = 405;
