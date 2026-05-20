@@ -152,7 +152,8 @@ class AppDatabase {
         // Format dates correctly from DB
         this.attendances = resAttendances.attendances.map(a => {
           if (a.date) {
-            a.date = new Date(a.date).toISOString().split('T')[0];
+            // Parse date as local date (avoid UTC shift by treating as YYYY-MM-DD directly)
+            a.date = typeof a.date === 'string' ? a.date.split('T')[0] : new Date(a.date).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
           }
           return a;
         });
@@ -163,7 +164,7 @@ class AppDatabase {
       if (resJournals.success) {
         this.journals = resJournals.journals.map(j => {
           if (j.date) {
-            j.date = new Date(j.date).toISOString().split('T')[0];
+            j.date = typeof j.date === 'string' ? j.date.split('T')[0] : new Date(j.date).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
           }
           return j;
         });
@@ -174,7 +175,7 @@ class AppDatabase {
       if (resCalendars.success) {
         this.calendars = resCalendars.calendars.map(c => {
           if (c.date) {
-            c.date = new Date(c.date).toISOString().split('T')[0];
+            c.date = typeof c.date === 'string' ? c.date.split('T')[0] : new Date(c.date).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
           }
           return c;
         });
@@ -1787,7 +1788,8 @@ function getFilteredAdminLogs() {
   today.setHours(0,0,0,0);
   
   if (dateFilter === 'today') {
-    const todayStr = new Date().toISOString().split('T')[0];
+    // Use WIB (Asia/Jakarta, UTC+7) to get correct local date
+    const todayStr = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
     logs = logs.filter(a => a.date === todayStr);
   } else if (dateFilter === 'this_week') {
     const day = today.getDay();
@@ -2028,7 +2030,7 @@ function renderAdminTable() {
   };
   
   if (isToday) {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
     const employees = db.users.filter(u => u.role === 'karyawan');
     employees.forEach(emp => {
       const log = filteredLogs.find(a => a.user_id === emp.id);
@@ -3028,9 +3030,23 @@ function setupEventListeners() {
       renderAdminDashboardKPIs();
       renderAdminRekapJabatan();
       renderAdminTable();
-      plotAdminMapRecords();
       renderAdminCharts();
       renderAdminRekapBulanan();
+
+      // Reset and re-render admin map with fresh data
+      if (state.leafletMaps.admin) {
+        state.leafletMaps.admin.remove();
+        state.leafletMaps.admin = null;
+        state.leafletMaps.adminMarkers = [];
+        const adminMapContainer = document.getElementById('admin-attendance-map');
+        if (adminMapContainer) {
+          const newMap = adminMapContainer.cloneNode(false);
+          adminMapContainer.parentNode.replaceChild(newMap, adminMapContainer);
+        }
+        initLeafletMaps();
+      } else {
+        plotAdminMapRecords();
+      }
 
       showToast("Data Diperbarui", "Seluruh data kehadiran terbaru berhasil dimuat dari server.", "success");
     } catch (err) {
