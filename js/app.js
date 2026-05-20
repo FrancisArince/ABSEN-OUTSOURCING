@@ -231,19 +231,37 @@ class AppDatabase {
     for (const a of this.attendances) {
       const sa = this._serverAttendances.find(s => s.id === a.id);
       if (!sa) {
-        // Brand new checkin
-        await fetch('/api/attendance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'checkin', ...a })
-        });
+        // Brand new checkin - strip photo_url if too large for Vercel payload limit
+        const payload = { action: 'checkin', ...a };
+        if (payload.photo_url && payload.photo_url.length > 500000) {
+          // Photo too large (>500KB), save without photo to ensure record is stored
+          console.warn(`Attendance ${a.id}: photo_url too large (${payload.photo_url.length} chars), saving without photo.`);
+          payload.photo_url = null;
+        }
+        try {
+          const resp = await fetch('/api/attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await resp.json();
+          if (!result.success) {
+            console.error(`Failed to save attendance ${a.id}:`, result.error);
+          }
+        } catch (err) {
+          console.error(`Network error saving attendance ${a.id}:`, err);
+        }
       } else if (sa.check_out_time !== a.check_out_time) {
         // Updated checkout
-        await fetch('/api/attendance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'checkout', ...a })
-        });
+        try {
+          await fetch('/api/attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'checkout', ...a, photo_url: undefined })
+          });
+        } catch (err) {
+          console.error(`Network error saving checkout ${a.id}:`, err);
+        }
       }
     }
     for (const sa of this._serverAttendances) {
