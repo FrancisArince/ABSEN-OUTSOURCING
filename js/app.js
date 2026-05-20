@@ -648,6 +648,9 @@ async function initApp() {
   
   // Load data from Neon DB
   await db.syncFromBackend();
+  
+  // Populate dropdowns once data is loaded
+  populateRekapJurnalKaryawanDropdown();
 }
 
 function startDigitalClock() {
@@ -1944,7 +1947,10 @@ function renderAdminRekapBulanan() {
   for (let i = 1; i <= daysInMonth; i++) {
     const d = new Date(parseInt(selectedTahun), parseInt(selectedBulan) - 1, i);
     const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-    thHtml += `<th style="width: 35px; border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); background: ${isWeekend ? 'rgba(255,255,255,0.1)' : 'transparent'}">${i}</th>`;
+    const dateStr = `${selectedTahun}-${selectedBulan}-${i.toString().padStart(2, '0')}`;
+    const isHoliday = db.calendars && db.calendars.some(c => c.date === dateStr);
+    const isWeekendOrHoliday = isWeekend || isHoliday;
+    thHtml += `<th style="width: 35px; border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); background: ${isWeekendOrHoliday ? 'rgba(255,255,255,0.1)' : 'transparent'}">${i}</th>`;
   }
   DOM.trTanggalHeaders.innerHTML = thHtml;
   
@@ -1962,6 +1968,9 @@ function renderAdminRekapBulanan() {
       const isWeekend = d.getDay() === 0 || d.getDay() === 6;
       
       const dateStr = `${selectedTahun}-${selectedBulan}-${i.toString().padStart(2, '0')}`;
+      const isHoliday = db.calendars && db.calendars.some(c => c.date === dateStr);
+      const isWeekendOrHoliday = isWeekend || isHoliday;
+      
       const att = db.attendances.find(a => a.user_id === emp.id && a.date === dateStr);
       
       let cellContent = '-<br>-';
@@ -1973,7 +1982,7 @@ function renderAdminRekapBulanan() {
         cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: var(--text-secondary)">${outTime}</span>`;
       }
       
-      rowHtml += `<td style="border-right: 1px solid rgba(255,255,255,0.1); background: ${isWeekend ? 'rgba(255,255,255,0.05)' : 'transparent'}; line-height: 1.4;">${cellContent}</td>`;
+      rowHtml += `<td style="border-right: 1px solid rgba(255,255,255,0.1); background: ${isWeekendOrHoliday ? 'rgba(255,255,255,0.05)' : 'transparent'}; line-height: 1.4;">${cellContent}</td>`;
     }
     
     rowHtml += '</tr>';
@@ -2369,6 +2378,7 @@ window.deleteEmployee = function(id) {
   renderAdminTable();
   renderAdminDashboardKPIs();
   renderAdminRekapJabatan();
+  populateRekapJurnalKaryawanDropdown();
   showToast("Pegawai Dihapus", "Pegawai berhasil dihapus dari sistem.", "info");
 };
 
@@ -2421,6 +2431,7 @@ window.deleteCalendar = function(id) {
   db.calendars = db.calendars.filter(c => c.id !== id);
   db.save();
   renderAdminCalendars();
+  renderAdminRekapBulanan();
   showToast("Dihapus", "Hari libur berhasil dihapus.", "info");
 };
 
@@ -2698,7 +2709,20 @@ window.exportRekapBulanan = function() {
   // --- Build header row ---
   const dayHeaders = [];
   for (let i = 1; i <= daysInMonth; i++) {
-    dayHeaders.push({ content: String(i), styles: { halign: 'center', fontSize: 6, cellWidth: 7 } });
+    const dateStr = `${selectedTahunStr}-${selectedBulan}-${i.toString().padStart(2, '0')}`;
+    const d = new Date(parseInt(selectedTahunStr), parseInt(selectedBulan) - 1, i);
+    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+    const isHoliday = db.calendars && db.calendars.some(c => c.date === dateStr);
+    const isWeekendOrHoliday = isWeekend || isHoliday;
+    dayHeaders.push({
+      content: String(i),
+      styles: {
+        halign: 'center',
+        fontSize: 6,
+        cellWidth: 7,
+        fillColor: isWeekendOrHoliday ? [220, 220, 220] : null
+      }
+    });
   }
   const tableHead = [
     [
@@ -2719,6 +2743,10 @@ window.exportRekapBulanan = function() {
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${selectedTahunStr}-${selectedBulan}-${i.toString().padStart(2, '0')}`;
       const att = db.attendances.find(a => a.user_id === emp.id && a.date === dateStr);
+      const d = new Date(parseInt(selectedTahunStr), parseInt(selectedBulan) - 1, i);
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      const isHoliday = db.calendars && db.calendars.some(c => c.date === dateStr);
+      const isWeekendOrHoliday = isWeekend || isHoliday;
 
       if (att && att.check_in_time) {
         const inTime = new Date(att.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -2732,18 +2760,17 @@ window.exportRekapBulanan = function() {
             halign: 'center',
             fontSize: 6,
             textColor: isLate ? [234, 179, 8] : [34, 197, 94],
+            fillColor: isWeekendOrHoliday ? [240, 240, 240] : null,
             cellPadding: 1
           }
         });
       } else {
-        const d = new Date(parseInt(selectedTahunStr), parseInt(selectedBulan) - 1, i);
-        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
         row.push({
-          content: isWeekend ? '' : '-',
+          content: isWeekendOrHoliday ? '' : '-',
           styles: {
             halign: 'center',
             fontSize: 6,
-            fillColor: isWeekend ? [45, 45, 55] : null,
+            fillColor: isWeekendOrHoliday ? [240, 240, 240] : null,
             textColor: [150, 150, 150]
           }
         });
@@ -2885,6 +2912,7 @@ function loginSessionStart(user) {
     renderAdminCalendars();
     renderAdminTable();
     renderAdminCharts();
+    populateRekapJurnalKaryawanDropdown();
     initLeafletMaps();
   } else {
     DOM.viewKaryawan.classList.add('active');
@@ -3058,6 +3086,7 @@ function setupEventListeners() {
       renderAdminTable();
       renderAdminCharts();
       renderAdminRekapBulanan();
+      populateRekapJurnalKaryawanDropdown();
 
       // Reset and re-render admin map with fresh data
       if (state.leafletMaps.admin) {
@@ -3242,6 +3271,7 @@ function setupEventListeners() {
       renderAdminDashboardKPIs();
       renderAdminRekapJabatan();
       renderAdminRekapBulanan();
+      populateRekapJurnalKaryawanDropdown();
       showToast("Pegawai Ditambahkan", "Pegawai baru berhasil didaftarkan.", "success");
     });
   }
@@ -3272,6 +3302,7 @@ function setupEventListeners() {
       DOM.formAddCalendar.reset();
       
       renderAdminCalendars();
+      renderAdminRekapBulanan();
       showToast("Kalender Disimpan", "Hari libur / cuti bersama berhasil ditambahkan.", "success");
     });
   }
