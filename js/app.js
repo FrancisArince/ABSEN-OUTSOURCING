@@ -3014,13 +3014,33 @@ function setupEventListeners() {
   if (btnCetakRJ)  btnCetakRJ.addEventListener('click', exportRekapJurnalPDF);
 
 
-  DOM.btnAdminRefresh.addEventListener('click', () => {
-    renderAdminDashboardKPIs();
-    renderAdminRekapJabatan();
-    renderAdminTable();
-    plotAdminMapRecords();
-    renderAdminCharts();
-    showToast("Segarkan Sukses", "Seluruh log kehadiran hari ini berhasil disegarkan.", "success");
+  DOM.btnAdminRefresh.addEventListener('click', async () => {
+    // Show loading state on button
+    const originalHTML = DOM.btnAdminRefresh.innerHTML;
+    DOM.btnAdminRefresh.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memuat...';
+    DOM.btnAdminRefresh.disabled = true;
+
+    try {
+      // Pull fresh data from Neon DB
+      await db.syncFromBackend();
+
+      // Re-render all admin panels with latest data
+      renderAdminDashboardKPIs();
+      renderAdminRekapJabatan();
+      renderAdminTable();
+      plotAdminMapRecords();
+      renderAdminCharts();
+      renderAdminRekapBulanan();
+
+      showToast("Data Diperbarui", "Seluruh data kehadiran terbaru berhasil dimuat dari server.", "success");
+    } catch (err) {
+      console.error("Refresh error:", err);
+      showToast("Gagal Memuat", "Terjadi kesalahan saat mengambil data dari server.", "error");
+    } finally {
+      // Restore button
+      DOM.btnAdminRefresh.innerHTML = originalHTML;
+      DOM.btnAdminRefresh.disabled = false;
+    }
   });
   DOM.btnAdminExport.addEventListener('click', exportAttendanceToCSV);
   
