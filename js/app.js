@@ -2721,14 +2721,24 @@ window.exportRekapBulanan = function() {
     const isWeekend = d.getDay() === 0 || d.getDay() === 6;
     const isHoliday = db.calendars && db.calendars.some(c => c.date === dateStr);
     const isWeekendOrHoliday = isWeekend || isHoliday;
+    
+    const cellStyle = {
+      halign: 'center',
+      fontSize: 6,
+      cellWidth: 7
+    };
+    
+    if (isWeekendOrHoliday) {
+      cellStyle.fillColor = [220, 220, 220];
+      cellStyle.textColor = [50, 50, 50]; // Dark gray text for light gray background
+    } else {
+      cellStyle.fillColor = [6, 182, 212];
+      cellStyle.textColor = [255, 255, 255]; // White text for cyan background
+    }
+
     dayHeaders.push({
       content: String(i),
-      styles: {
-        halign: 'center',
-        fontSize: 6,
-        cellWidth: 7,
-        fillColor: isWeekendOrHoliday ? [220, 220, 220] : null
-      }
+      styles: cellStyle
     });
   }
   const tableHead = [
@@ -2766,7 +2776,7 @@ window.exportRekapBulanan = function() {
           styles: {
             halign: 'center',
             fontSize: 6,
-            textColor: isLate ? [234, 179, 8] : [34, 197, 94],
+            textColor: isLate ? [200, 100, 0] : [21, 128, 61], // Dark orange / Dark green for perfect readability
             fillColor: isWeekendOrHoliday ? [240, 240, 240] : null,
             cellPadding: 1
           }
