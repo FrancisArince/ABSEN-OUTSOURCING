@@ -25,6 +25,14 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Self-healing: Ensure table exists
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key VARCHAR(50) PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    `);
+
     if (req.method === 'GET') {
       const result = await db.query('SELECT * FROM settings');
       const settings = {};

@@ -1052,6 +1052,27 @@ function initLeafletMaps() {
       L.marker(centerCoords, { icon: officeIconAdmin }).addTo(state.leafletMaps.admin)
         .bindPopup("<strong>Kantor Disdukcapil</strong><br>Pusat Geofencing Radius 150m");
 
+      // Add map click listener to update input fields
+      let adminTargetMarker = null;
+      state.leafletMaps.admin.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        if (DOM.adminOfficeLat && DOM.adminOfficeLng) {
+          DOM.adminOfficeLat.value = lat.toFixed(6);
+          DOM.adminOfficeLng.value = lng.toFixed(6);
+        }
+        if (adminTargetMarker) {
+          adminTargetMarker.setLatLng(e.latlng);
+        } else {
+          adminTargetMarker = L.marker(e.latlng, {
+            icon: L.divIcon({
+              className: 'office-temp-marker',
+              html: '<div style="background: var(--warning); width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow: 0 0 8px var(--warning-glow)"></div>',
+              iconSize: [14, 14]
+            })
+          }).addTo(state.leafletMaps.admin).bindPopup("Titik baru (klik tombol Perbarui untuk menyimpan)").openPopup();
+        }
+      });
+
       plotAdminMapRecords();
     }, 150);
   }
