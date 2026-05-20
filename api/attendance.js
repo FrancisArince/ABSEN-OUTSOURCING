@@ -36,13 +36,14 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') {
       const body = await parseBody(req);
-      const { action, id, user_id, date, check_in_time, check_out_time, distance, latitude_longitude, face_match, status } = body;
+      const { action, id, user_id, date, check_in_time, check_out_time, photo_url, distance, latitude_longitude, face_match, status } = body;
 
       if (action === 'checkin') {
         await db.query(
-          `INSERT INTO attendances (id, user_id, date, check_in_time, distance, latitude_longitude, face_match, status) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [id, user_id, date, check_in_time, distance, latitude_longitude, face_match, status]
+          `INSERT INTO attendances (id, user_id, date, check_in_time, photo_url, distance, latitude_longitude, face_match, status) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           ON CONFLICT (id) DO NOTHING`,
+          [id, user_id, date, check_in_time, photo_url || null, distance, latitude_longitude, face_match, status]
         );
         res.statusCode = 200;
         return res.end(JSON.stringify({ success: true }));

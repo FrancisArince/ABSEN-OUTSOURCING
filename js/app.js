@@ -2221,10 +2221,45 @@ window.openPhotoViewerModal = function(attendanceId) {
   const user = db.users.find(u => u.id === log.user_id);
   if (!user) return;
   
-  DOM.modalAttendancePhoto.src = log.photo_url;
+  // Show photo or placeholder if no photo available
+  if (log.photo_url && log.photo_url.length > 10) {
+    DOM.modalAttendancePhoto.src = log.photo_url;
+    DOM.modalAttendancePhoto.style.objectFit = 'cover';
+    DOM.modalAttendancePhoto.style.filter = 'none';
+  } else {
+    // Generate placeholder with user initials
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 400, 300);
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.arc(200, 130, 80, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#06b6d4';
+    ctx.font = 'bold 48px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(user.avatar || user.name.substring(0, 2).toUpperCase(), 200, 130);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '14px Inter, sans-serif';
+    ctx.fillText('Foto tidak tersedia - Absen sebelum fitur foto ditambahkan', 200, 250);
+    DOM.modalAttendancePhoto.src = canvas.toDataURL();
+    DOM.modalAttendancePhoto.style.objectFit = 'contain';
+  }
+  
   DOM.modalPhotoEmployeeName.textContent = user.name;
   DOM.modalPhotoTimestamp.textContent = `Waktu Datang: ${new Date(log.check_in_time).toLocaleTimeString('id-ID')} WIB • ${formatIndoDate(log.date)}`;
-  DOM.modalPhotoMatchRate.textContent = `Kecocokan AI Biometrik: ${log.face_match}% (TERVERIFIKASI ASLI)`;
+  
+  if (log.face_match) {
+    DOM.modalPhotoMatchRate.textContent = `Kecocokan AI Biometrik: ${log.face_match}% (TERVERIFIKASI ASLI)`;
+    DOM.modalPhotoMatchRate.style.color = 'var(--success)';
+  } else {
+    DOM.modalPhotoMatchRate.textContent = `Data biometrik tidak tersedia`;
+    DOM.modalPhotoMatchRate.style.color = 'var(--text-muted)';
+  }
   
   DOM.modalPhotoViewer.classList.remove('hidden');
 };

@@ -35,11 +35,17 @@ module.exports = async (req, res) => {
         date DATE NOT NULL,
         check_in_time TIMESTAMP NOT NULL,
         check_out_time TIMESTAMP,
+        photo_url TEXT,
         distance NUMERIC,
         latitude_longitude VARCHAR(100),
         face_match NUMERIC,
         status VARCHAR(50)
       );
+    `);
+
+    // Migration: add photo_url column if it doesn't exist (for existing databases)
+    await db.query(`
+      ALTER TABLE attendances ADD COLUMN IF NOT EXISTS photo_url TEXT;
     `);
 
     await db.query(`
