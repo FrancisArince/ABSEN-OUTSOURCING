@@ -27,7 +27,13 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const result = await db.query('SELECT * FROM journals');
+      const result = await db.query(`
+        SELECT id, user_id,
+          TO_CHAR(date, 'YYYY-MM-DD') AS date,
+          task_description, verified, verified_by, verified_at
+        FROM journals
+        ORDER BY date DESC
+      `);
       res.statusCode = 200;
       return res.end(JSON.stringify({ success: true, journals: result.rows }));
     }

@@ -29,7 +29,13 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const result = await db.query('SELECT * FROM calendars');
+      const result = await db.query(`
+        SELECT id,
+          TO_CHAR(date, 'YYYY-MM-DD') AS date,
+          title, type
+        FROM calendars
+        ORDER BY date ASC
+      `);
       res.statusCode = 200;
       return res.end(JSON.stringify({ success: true, calendars: result.rows }));
     }

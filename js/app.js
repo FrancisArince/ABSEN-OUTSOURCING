@@ -149,36 +149,19 @@ class AppDatabase {
 
       const resAttendances = await fetch('/api/attendance').then(r => r.json());
       if (resAttendances.success) {
-        // Format dates correctly from DB
-        this.attendances = resAttendances.attendances.map(a => {
-          if (a.date) {
-            // Parse date as local date (avoid UTC shift by treating as YYYY-MM-DD directly)
-            a.date = typeof a.date === 'string' ? a.date.split('T')[0] : new Date(a.date).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
-          }
-          return a;
-        });
+        this.attendances = resAttendances.attendances;
         this._serverAttendances = JSON.parse(JSON.stringify(this.attendances));
       }
 
       const resJournals = await fetch('/api/journal').then(r => r.json());
       if (resJournals.success) {
-        this.journals = resJournals.journals.map(j => {
-          if (j.date) {
-            j.date = typeof j.date === 'string' ? j.date.split('T')[0] : new Date(j.date).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
-          }
-          return j;
-        });
+        this.journals = resJournals.journals;
         this._serverJournals = JSON.parse(JSON.stringify(this.journals));
       }
 
       const resCalendars = await fetch('/api/calendar').then(r => r.json());
       if (resCalendars.success) {
-        this.calendars = resCalendars.calendars.map(c => {
-          if (c.date) {
-            c.date = typeof c.date === 'string' ? c.date.split('T')[0] : new Date(c.date).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
-          }
-          return c;
-        });
+        this.calendars = resCalendars.calendars;
         this._serverCalendars = JSON.parse(JSON.stringify(this.calendars));
       }
 

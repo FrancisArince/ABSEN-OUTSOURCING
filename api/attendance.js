@@ -29,7 +29,16 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const result = await db.query('SELECT * FROM attendances');
+      // Use TO_CHAR to return date as plain YYYY-MM-DD string (avoids UTC timezone shift)
+      const result = await db.query(`
+        SELECT 
+          id, user_id, 
+          TO_CHAR(date, 'YYYY-MM-DD') AS date,
+          check_in_time, check_out_time,
+          photo_url, distance, latitude_longitude, face_match, status
+        FROM attendances
+        ORDER BY check_in_time DESC
+      `);
       res.statusCode = 200;
       return res.end(JSON.stringify({ success: true, attendances: result.rows }));
     }
