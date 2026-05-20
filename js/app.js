@@ -2064,6 +2064,13 @@ function renderAdminTable() {
     const employees = db.users.filter(u => u.role === 'karyawan');
     employees.forEach(emp => {
       const log = filteredLogs.find(a => a.user_id === emp.id);
+      
+      // If filtering by "Semua Status", hide employees who haven't checked in yet or were deleted
+      if (statusFilter === 'all' && !log) return;
+      
+      // If filtering by specific status and there's no log, only proceed if looking for "Belum Absen"
+      if (statusFilter !== 'all' && !log && statusFilter !== 'Belum Absen') return;
+      
       renderRow(emp, log, log ? log.date : todayStr);
     });
   } else {
