@@ -2822,6 +2822,45 @@ window.exportRekapBulanan = function() {
     margin: { left: 8, right: 8 }
   });
 
+  // --- Signature Block ---
+  const finalY = doc.previousAutoTable.finalY;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const signatureHeight = 45;
+  const bottomMargin = 15;
+  
+  let currentY = finalY + 12;
+  if (currentY + signatureHeight > pageHeight - bottomMargin) {
+    doc.addPage();
+    currentY = 20;
+  }
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(0, 0, 0);
+  
+  // Left side headers
+  doc.text("Mengetahui,", 15, currentY);
+  doc.text("KEPALA DINAS", 15, currentY + 4);
+  doc.text("KEPENDUDUKAN DAN PENCATATAN SIPIL", 15, currentY + 8);
+  doc.text("KABUPATEN MURUNG RAYA", 15, currentY + 12);
+  
+  // Right side headers
+  doc.text(`Puruk Cahu,   ${selectedBulanText} ${selectedTahunStr}`, 210, currentY);
+  doc.text("KASUBBAG UMUM DAN KEPEGAWAIAN", 210, currentY + 4);
+  
+  // Names (Bold)
+  doc.setFont('helvetica', 'bold');
+  doc.text("GEMA TOPANDAS TIDJA, S.Sos., M.M", 15, currentY + 32);
+  doc.text("TUTI HERYATI, S.E., M.M", 210, currentY + 32);
+  
+  // NIP / Rank (Normal)
+  doc.setFont('helvetica', 'normal');
+  doc.text("Pembina Tingkat I (IV/b)", 15, currentY + 36);
+  doc.text("NIP. 19781005 200701 1 008", 15, currentY + 40);
+  
+  doc.text("Penata (III/c)", 210, currentY + 36);
+  doc.text("NIP. 19780502 200701 2 025", 210, currentY + 40);
+
   // Footer
   const pageCount = doc.internal.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
