@@ -2229,3 +2229,32 @@ img, video, canvas {
   color: #fff;
   box-shadow: 0 0 10px var(--error-glow);
 }
+
+.employee-permits-card,
+.admin-permits-card {
+  padding: 24px;
+}
+
+.status-tag.izin {
+  background: rgba(6, 182, 212, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.status-tag.sakit {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-tag.cuti {
+  background: rgba(139, 92, 246, 0.08);
+  color: var(--violet);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .permits-grid-container {
+    grid-template-columns: 1fr !important;
+  }
+}

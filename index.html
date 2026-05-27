@@ -279,6 +279,77 @@
 
           </div>
         </div>
+
+        <!-- PENGASUHAN / PENGAJUAN IZIN & CUTI KARYAWAN -->
+        <div class="employee-permits-card glass-panel fade-in" style="margin-top: 24px;">
+          <div class="records-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 16px; margin-bottom: 20px;">
+            <h3><i class="fa-solid fa-file-signature" style="color: var(--violet);"></i> Pengajuan Izin & Cuti</h3>
+            <p class="section-desc">Formulir pengajuan izin tidak masuk, sakit, atau cuti tahunan.</p>
+          </div>
+
+          <div class="permits-grid-container" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px;">
+            <!-- Form Pengajuan -->
+            <div style="background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+              <form id="form-submit-permit">
+                <div class="form-group" style="margin-bottom: 15px;">
+                  <label>Jenis Pengajuan</label>
+                  <select id="permit-type" required class="filter-dropdown" style="width: 100%; border: 1px solid var(--glass-border); padding: 10px; background: rgba(0,0,0,0.3); color: white; border-radius: var(--radius-xs); appearance: auto;">
+                    <option value="izin">Izin Tidak Masuk Kerja (Maks 1 Hari)</option>
+                    <option value="sakit">Sakit</option>
+                    <option value="cuti">Cuti Tahunan</option>
+                  </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                  <div class="form-group">
+                    <label>Tanggal Mulai</label>
+                    <input type="date" id="permit-start-date" required class="filter-date-input" style="width: 100%; box-sizing: border-box;">
+                  </div>
+                  <div class="form-group">
+                    <label>Tanggal Selesai</label>
+                    <input type="date" id="permit-end-date" required class="filter-date-input" style="width: 100%; box-sizing: border-box;">
+                  </div>
+                </div>
+                <!-- Doctor's Letter number, shown dynamically if permit-type is 'sakit' -->
+                <div class="form-group" id="doctor-letter-group" style="margin-bottom: 15px; display: none;">
+                  <label>Nomor Surat Keterangan Sakit Dokter</label>
+                  <input type="text" id="doctor-letter-number" placeholder="Contoh: SKD/123/DISDUKCAPIL" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 10px; color: white; border-radius: var(--radius-xs); box-sizing: border-box;">
+                  <span style="font-size: 0.72rem; color: var(--text-tertiary);">Wajib diisi jika sakit lebih dari 1 hari.</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                  <label>Alasan Pengajuan</label>
+                  <textarea id="permit-reason" rows="3" required placeholder="Tulis alasan secara jelas..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 10px; color: white; border-radius: var(--radius-xs); box-sizing: border-box; resize: vertical; font-family: inherit;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-violet btn-block">
+                  <i class="fa-solid fa-paper-plane"></i> Kirim Pengajuan
+                </button>
+              </form>
+            </div>
+
+            <!-- List Pengajuan -->
+            <div>
+              <h4 style="margin-bottom: 12px; font-weight: 600; color: var(--text-secondary);"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pengajuan Anda</h4>
+              <div class="table-scroll-container" style="max-height: 380px;">
+                <table class="modern-table">
+                  <thead>
+                    <tr>
+                      <th>Jenis</th>
+                      <th>Tanggal</th>
+                      <th>Hari</th>
+                      <th>Alasan / Info</th>
+                      <th>Status</th>
+                      <th>Surat Cuti</th>
+                    </tr>
+                  </thead>
+                  <tbody id="employee-permits-table-body">
+                    <tr>
+                      <td colspan="6" class="text-center" style="padding: 20px; color: var(--text-secondary);">Belum ada riwayat pengajuan.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 3. ADMIN/PENGAWAS PORTAL -->
@@ -528,6 +599,35 @@
             <p style="color: var(--text-secondary); text-align: center; padding: 30px 0;">
               <i class="fa-solid fa-hand-pointer" style="margin-right: 8px;"></i>Pilih karyawan dan periode untuk menampilkan rekap jurnal.
             </p>
+          </div>
+        </div>
+
+        <!-- PERSETUJUAN IZIN & CUTI (ADMIN/PENGAWAS) -->
+        <div class="admin-permits-card glass-panel fade-in" style="margin-bottom: 24px;" id="admin-permits-panel">
+          <div class="records-header" style="flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-clipboard-check" style="color: var(--violet);"></i> Persetujuan Pengajuan Izin & Cuti</h3>
+            <p class="section-desc">Verifikasi dan setujui pengajuan izin tidak masuk, sakit, atau cuti tahunan dari pegawai.</p>
+          </div>
+          <div class="table-scroll-container">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Pegawai</th>
+                  <th>Jenis Pengajuan</th>
+                  <th>Tanggal Mulai</th>
+                  <th>Tanggal Selesai</th>
+                  <th>Jumlah Hari</th>
+                  <th>Alasan / Lampiran</th>
+                  <th>Status</th>
+                  <th>Aksi / Surat Cuti</th>
+                </tr>
+              </thead>
+              <tbody id="admin-permits-table-body">
+                <tr>
+                  <td colspan="8" class="text-center" style="padding: 20px; color: var(--text-secondary);">Tidak ada pengajuan izin/cuti baru.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

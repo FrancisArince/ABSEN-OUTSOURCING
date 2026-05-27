@@ -70,6 +70,21 @@ module.exports = async (req, res) => {
     `);
 
     await db.query(`
+      CREATE TABLE IF NOT EXISTS permits (
+        id VARCHAR(50) PRIMARY KEY,
+        user_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
+        permit_type VARCHAR(50) NOT NULL,
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
+        reason TEXT,
+        doctor_letter_number VARCHAR(100),
+        status VARCHAR(20) DEFAULT 'pending',
+        approved_by VARCHAR(100),
+        approved_at TIMESTAMP
+      );
+    `);
+
+    await db.query(`
       CREATE TABLE IF NOT EXISTS settings (
         key VARCHAR(50) PRIMARY KEY,
         value TEXT NOT NULL

@@ -131,12 +131,14 @@ class AppDatabase {
     this.attendances = [];
     this.journals = [];
     this.calendars = [];
+    this.permits = [];
 
     // Shadow copies to track changes
     this._serverUsers = [];
     this._serverAttendances = [];
     this._serverJournals = [];
     this._serverCalendars = [];
+    this._serverPermits = [];
   }
 
   async syncFromBackend() {
@@ -177,6 +179,12 @@ class AppDatabase {
       if (resCalendars.success) {
         this.calendars = resCalendars.calendars;
         this._serverCalendars = JSON.parse(JSON.stringify(this.calendars));
+      }
+
+      const resPermits = await fetch('/api/permit').then(r => r.json());
+      if (resPermits && resPermits.success) {
+        this.permits = resPermits.permits;
+        this._serverPermits = JSON.parse(JSON.stringify(this.permits));
       }
 
       // Load global settings from database
@@ -329,11 +337,36 @@ class AppDatabase {
       }
     }
 
+    // 5. Permits Differential Sync
+    for (const p of this.permits) {
+      const sp = this._serverPermits.find(s => s.id === p.id);
+      if (!sp) {
+        await fetch('/api/permit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create', ...p })
+        });
+      } else if (sp.status !== p.status) {
+        await fetch('/api/permit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update', ...p })
+        });
+      }
+    }
+    for (const sp of this._serverPermits) {
+      const stillExists = this.permits.some(p => p.id === sp.id);
+      if (!stillExists) {
+        await fetch(`/api/permit?id=${sp.id}`, { method: 'DELETE' });
+      }
+    }
+
     // Update shadow copies
     this._serverUsers = JSON.parse(JSON.stringify(this.users));
     this._serverAttendances = JSON.parse(JSON.stringify(this.attendances));
     this._serverJournals = JSON.parse(JSON.stringify(this.journals));
     this._serverCalendars = JSON.parse(JSON.stringify(this.calendars));
+    this._serverPermits = JSON.parse(JSON.stringify(this.permits));
   }
 
   getUserByEmail(email) {
@@ -1739,11 +1772,16 @@ function renderPersonalHistoryTimeline() {
     const journal = db.journals.find(j => j.user_id === log.user_id && j.date === log.date);
     
     let statusClass = log.status.replace(" ", "-");
-    let checkinTimeStr = new Date(log.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    let checkoutTimeStr = log.check_out_time ? new Date(log.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : "Belum Absen";
+    let isPermitStatus = log.status === 'Izin' || log.status === 'Sakit' || log.status === 'Cuti';
+    let checkinTimeStr = isPermitStatus ? "-" : new Date(log.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    let checkoutTimeStr = isPermitStatus ? "-" : (log.check_out_time ? new Date(log.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : "Belum Absen");
     
     let statusLabel = log.status;
-    let labelBadgeClass = log.status === 'Hadir' ? 'hadir' : (log.status === 'Terlambat' ? 'terlambat' : 'radius-warning');
+    let labelBadgeClass = log.status === 'Hadir' ? 'hadir' : 
+                         (log.status === 'Terlambat' ? 'terlambat' : 
+                         (log.status === 'Izin' ? 'izin' : 
+                         (log.status === 'Sakit' ? 'sakit' : 
+                         (log.status === 'Cuti' ? 'cuti' : 'radius-warning'))));
     
     const item = document.createElement("div");
     item.className = `history-item ${statusClass}`;
@@ -1975,11 +2013,16 @@ function renderAdminRekapBulanan() {
       
       let cellContent = '-<br>-';
       if (att) {
-        const inTime = new Date(att.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        const outTime = att.check_out_time ? new Date(att.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
-        
-        let inColor = att.status === 'Terlambat' ? 'var(--warning)' : (att.status === 'Hadir' ? 'var(--success)' : 'inherit');
-        cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: var(--text-secondary)">${outTime}</span>`;
+        if (att.status === 'Izin' || att.status === 'Sakit' || att.status === 'Cuti') {
+          let badgeColor = att.status === 'Izin' ? 'var(--primary)' : (att.status === 'Sakit' ? 'var(--error)' : 'var(--violet)');
+          cellContent = `<strong style="color: ${badgeColor}; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;">${att.status}</strong>`;
+        } else {
+          const inTime = new Date(att.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          const outTime = att.check_out_time ? new Date(att.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+          
+          let inColor = att.status === 'Terlambat' ? 'var(--warning)' : (att.status === 'Hadir' ? 'var(--success)' : 'inherit');
+          cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: var(--text-secondary)">${outTime}</span>`;
+        }
       }
       
       rowHtml += `<td style="border-right: 1px solid rgba(255,255,255,0.1); background: ${isWeekendOrHoliday ? 'rgba(255,255,255,0.05)' : 'transparent'}; line-height: 1.4;">${cellContent}</td>`;
@@ -3022,6 +3065,7 @@ function loginSessionStart(user) {
     renderAdminEmployees();
     renderAdminSupervisors();
     renderAdminCalendars();
+    renderAdminPermits();
     renderAdminTable();
     renderAdminCharts();
     populateRekapJurnalKaryawanDropdown();
@@ -3032,6 +3076,7 @@ function loginSessionStart(user) {
     
     renderEmployeeDashboardWidgets();
     renderPersonalHistoryTimeline();
+    renderEmployeePermits();
     initLeafletMaps();
     
     // Auto-fetch real GPS
@@ -3197,6 +3242,7 @@ function setupEventListeners() {
       renderAdminRekapJabatan();
       renderAdminEmployees();
       renderAdminSupervisors();
+      renderAdminPermits();
       renderAdminTable();
       renderAdminCharts();
       renderAdminRekapBulanan();
@@ -3510,7 +3556,378 @@ function setupEventListeners() {
       showToast("Shift Disimpan", "Pengaturan jam kerja untuk Shift Siang & Malam berhasil diperbarui.", "success");
     });
   }
+
+  // Permits & Leaves UI Handlers
+  const permitTypeSelect = document.getElementById('permit-type');
+  const doctorLetterGroup = document.getElementById('doctor-letter-group');
+  if (permitTypeSelect && doctorLetterGroup) {
+    permitTypeSelect.addEventListener('change', (e) => {
+      doctorLetterGroup.style.display = e.target.value === 'sakit' ? 'block' : 'none';
+    });
+  }
+
+  const formSubmitPermit = document.getElementById('form-submit-permit');
+  if (formSubmitPermit) {
+    formSubmitPermit.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const type = document.getElementById('permit-type').value;
+      const startVal = document.getElementById('permit-start-date').value;
+      const endVal = document.getElementById('permit-end-date').value;
+      const reason = document.getElementById('permit-reason').value.trim();
+      const docLetter = document.getElementById('doctor-letter-number').value.trim();
+      
+      if (!startVal || !endVal) {
+        showToast("Tanggal Kosong", "Silakan tentukan Tanggal Mulai dan Selesai.", "error");
+        return;
+      }
+      
+      const start = new Date(startVal);
+      const end = new Date(endVal);
+      if (end < start) {
+        showToast("Tanggal Salah", "Tanggal Selesai tidak boleh mendahului Tanggal Mulai.", "error");
+        return;
+      }
+      
+      const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      
+      // Validation 1: Izin tidak masuk kerja max 1 hari
+      if (type === 'izin' && days > 1) {
+        showToast("Izin Maksimal 1 Hari", "Pengajuan izin hanya berlaku untuk 1 hari kerja. Silakan isi form pengajuan cuti jika lebih dari 1 hari.", "error");
+        return;
+      }
+      
+      // Validation 2: Sakit > 1 hari must have medical certificate number
+      if (type === 'sakit' && days > 1 && !docLetter) {
+        showToast("Nomor SKD Wajib", "Untuk pengajuan sakit lebih dari 1 hari, Anda wajib mengisi nomor surat keterangan sakit dokter.", "error");
+        return;
+      }
+      
+      const newPermit = {
+        id: 'pm-' + Date.now(),
+        user_id: state.currentUser.id,
+        permit_type: type,
+        start_date: startVal,
+        end_date: endVal,
+        reason: reason,
+        doctor_letter_number: docLetter || null,
+        status: 'pending',
+        approved_by: null,
+        approved_at: null
+      };
+      
+      db.permits.push(newPermit);
+      await db.save();
+      
+      formSubmitPermit.reset();
+      if (doctorLetterGroup) doctorLetterGroup.style.display = 'none';
+      renderEmployeePermits();
+      showToast("Pengajuan Dikirim", "Pengajuan izin/cuti berhasil dikirim dan menunggu persetujuan.", "success");
+    });
+  }
 }
+
+// Global functions for Permits
+function renderEmployeePermits() {
+  const tbody = document.getElementById('employee-permits-table-body');
+  if (!tbody || !state.currentUser) return;
+  
+  const myPermits = db.permits.filter(p => p.user_id === state.currentUser.id);
+  tbody.innerHTML = '';
+  
+  myPermits.forEach(p => {
+    const start = new Date(p.start_date);
+    const end = new Date(p.end_date);
+    const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    
+    let badgeClass = p.status === 'approved' ? 'hadir' : (p.status === 'rejected' ? 'verif-failed' : 'terlambat');
+    let statusLabel = p.status === 'approved' ? 'Disetujui' : (p.status === 'rejected' ? 'Ditolak' : 'Menunggu');
+    
+    let info = p.reason;
+    if (p.permit_type === 'sakit' && p.doctor_letter_number) {
+      info += `<br><span style="font-size:0.75rem; color:var(--text-tertiary);"><i class="fa-solid fa-file-medical"></i> SKD: ${p.doctor_letter_number}</span>`;
+    }
+    
+    let pdfBtn = '-';
+    if (p.permit_type === 'cuti' && p.status === 'approved') {
+      pdfBtn = `<button class="btn btn-secondary btn-sm" onclick="downloadLeavePDF('${p.id}')" style="padding: 4px 8px; font-size: 0.75rem; background: var(--violet); border-color: var(--violet); color: white;"><i class="fa-solid fa-file-pdf"></i> Surat Cuti</button>`;
+    }
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-transform: capitalize; font-weight:600;">${p.permit_type}</td>
+      <td>${formatIndoDate(p.start_date)} s/d ${formatIndoDate(p.end_date)}</td>
+      <td>${days} Hari</td>
+      <td>${info}</td>
+      <td><span class="status-tag ${badgeClass}">${statusLabel}</span></td>
+      <td style="text-align: center;">${pdfBtn}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (myPermits.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: var(--text-secondary);">Belum ada riwayat pengajuan.</td></tr>';
+  }
+}
+
+function renderAdminPermits() {
+  const tbody = document.getElementById('admin-permits-table-body');
+  if (!tbody) return;
+  
+  const permits = db.permits || [];
+  tbody.innerHTML = '';
+  
+  // Sort permits by start_date descending
+  permits.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+  
+  permits.forEach(p => {
+    const emp = db.users.find(u => u.id === p.user_id);
+    const empName = emp ? emp.name : 'N/A';
+    const empPos = emp ? emp.position : 'N/A';
+    
+    const start = new Date(p.start_date);
+    const end = new Date(p.end_date);
+    const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    
+    let info = p.reason;
+    if (p.permit_type === 'sakit' && p.doctor_letter_number) {
+      info += `<br><span style="font-size:0.75rem; color:var(--error);"><i class="fa-solid fa-file-medical"></i> SKD: ${p.doctor_letter_number}</span>`;
+    }
+    
+    let statusLabel = '';
+    let badgeClass = '';
+    if (p.status === 'approved') {
+      statusLabel = 'Disetujui';
+      badgeClass = 'hadir';
+    } else if (p.status === 'rejected') {
+      statusLabel = 'Ditolak';
+      badgeClass = 'verif-failed';
+    } else {
+      statusLabel = 'Menunggu';
+      badgeClass = 'terlambat';
+    }
+    
+    let actionHtml = '';
+    if (p.status === 'pending') {
+      actionHtml = `
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-success btn-sm" onclick="approvePermit('${p.id}')" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-check"></i> Setuju</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectPermit('${p.id}')" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-xmark"></i> Tolak</button>
+        </div>
+      `;
+    } else if (p.permit_type === 'cuti' && p.status === 'approved') {
+      actionHtml = `<button class="btn btn-secondary btn-sm" onclick="downloadLeavePDF('${p.id}')" style="padding: 4px 8px; font-size: 0.75rem; background: var(--violet); border-color: var(--violet); color: white;"><i class="fa-solid fa-file-pdf"></i> Surat Cuti</button>`;
+    } else {
+      actionHtml = `<span style="font-size:0.8rem; color:var(--text-tertiary);">${p.approved_by || '-'}</span>`;
+    }
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="cell-employee">
+          <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.7rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white;">${emp ? emp.avatar : '?'}</div>
+          <div class="cell-meta">
+            <span class="cell-name">${empName}</span>
+            <span class="cell-role" style="font-size:0.72rem;">${empPos}</span>
+          </div>
+        </div>
+      </td>
+      <td style="text-transform: capitalize; font-weight:600;">${p.permit_type}</td>
+      <td>${formatIndoDate(p.start_date)}</td>
+      <td>${formatIndoDate(p.end_date)}</td>
+      <td>${days} Hari</td>
+      <td>${info}</td>
+      <td><span class="status-tag ${badgeClass}">${statusLabel}</span></td>
+      <td>${actionHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (permits.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 20px; color: var(--text-secondary);">Tidak ada pengajuan izin/cuti.</td></tr>';
+  }
+}
+
+window.approvePermit = function(id) {
+  if (!confirm('Apakah Anda yakin ingin menyetujui pengajuan ini?')) return;
+  const permit = db.permits.find(p => p.id === id);
+  if (!permit) return;
+  
+  permit.status = 'approved';
+  permit.approved_by = state.currentUser ? state.currentUser.name : 'System';
+  permit.approved_at = new Date().toISOString();
+  
+  // Generate attendances for each date
+  const start = new Date(permit.start_date);
+  const end = new Date(permit.end_date);
+  const user = db.users.find(u => u.id === permit.user_id);
+  
+  const statusMap = {
+    'izin': 'Izin',
+    'sakit': 'Sakit',
+    'cuti': 'Cuti'
+  };
+  const attendanceStatus = statusMap[permit.permit_type] || 'Izin';
+  
+  let loop = new Date(start);
+  while (loop <= end) {
+    const dateStr = loop.toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
+    
+    // Check if attendance already exists
+    const exists = db.attendances.some(a => a.user_id === permit.user_id && a.date === dateStr);
+    if (!exists) {
+      const attId = `att-permit-${dateStr}-${permit.user_id}`;
+      const newAtt = {
+        id: attId,
+        user_id: permit.user_id,
+        date: dateStr,
+        check_in_time: dateStr + 'T08:00:00+07:00',
+        check_out_time: dateStr + 'T16:00:00+07:00',
+        photo_url: null,
+        latitude_longitude: '-',
+        distance: 0,
+        face_match: 100,
+        status: attendanceStatus
+      };
+      db.attendances.push(newAtt);
+    }
+    
+    loop.setDate(loop.getDate() + 1);
+  }
+  
+  db.save();
+  renderAdminPermits();
+  renderAdminTable();
+  renderAdminDashboardKPIs();
+  renderAdminRekapJabatan();
+  renderAdminRekapBulanan();
+  showToast("Pengajuan Disetujui", `Pengajuan ${permit.permit_type} untuk ${user ? user.name : 'Pegawai'} berhasil disetujui.`, "success");
+};
+
+window.rejectPermit = function(id) {
+  if (!confirm('Apakah Anda yakin ingin menolak pengajuan ini?')) return;
+  const permit = db.permits.find(p => p.id === id);
+  if (!permit) return;
+  
+  permit.status = 'rejected';
+  permit.approved_by = state.currentUser ? state.currentUser.name : 'System';
+  permit.approved_at = new Date().toISOString();
+  
+  db.save();
+  renderAdminPermits();
+  showToast("Pengajuan Ditolak", `Pengajuan ${permit.permit_type} telah ditolak.`, "info");
+};
+
+window.downloadLeavePDF = function(permitId) {
+  const permit = db.permits.find(p => p.id === permitId);
+  if (!permit) {
+    showToast("Error", "Data pengajuan tidak ditemukan.", "error");
+    return;
+  }
+  
+  if (!window.jspdf) {
+    showToast("Error", "Library PDF belum termuat.", "error");
+    return;
+  }
+  
+  const emp = db.users.find(u => u.id === permit.user_id);
+  const empName = emp ? emp.name : 'N/A';
+  const empPos = emp ? emp.position : 'N/A';
+  
+  const start = new Date(permit.start_date);
+  const end = new Date(permit.end_date);
+  const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  
+  const startStr = formatIndoDate(permit.start_date);
+  const endStr = formatIndoDate(permit.end_date);
+  const approvedDateStr = formatIndoDate(permit.approved_at.split('T')[0]);
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+  
+  // Design official Kop Surat (Header)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("PEMERINTAH KABUPATEN MURUNG RAYA", 105, 20, { align: "center" });
+  doc.setFontSize(14);
+  doc.text("DINAS KEPENDUDUKAN DAN PENCATATAN SIPIL", 105, 26, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Jl. Letjend Soeprapto No. 5 Puruk Cahu, Kode Pos 73911", 105, 31, { align: "center" });
+  
+  // Double line separator
+  doc.setLineWidth(0.6);
+  doc.line(20, 35, 190, 35);
+  doc.setLineWidth(0.2);
+  doc.line(20, 36.5, 190, 36.5);
+  
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("SURAT IZIN CUTI TAHUNAN", 105, 46, { align: "center" });
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  const refNo = `Nomor: 800/Cuti/${permit.id.substring(3, 8).toUpperCase()}/Disdukcapil/2026`;
+  doc.text(refNo, 105, 51, { align: "center" });
+  
+  // Body text
+  let y = 62;
+  doc.text("Diberikan izin cuti tahunan kepada Pegawai Outsourcing berikut:", 20, y);
+  
+  y += 8;
+  doc.setFont("helvetica", "bold");
+  doc.text("Nama", 30, y);
+  doc.text(":", 70, y);
+  doc.text(empName, 75, y);
+  
+  y += 6;
+  doc.text("Jabatan/Posisi", 30, y);
+  doc.text(":", 70, y);
+  doc.text(empPos, 75, y);
+  
+  y += 6;
+  doc.text("Unit Kerja", 30, y);
+  doc.text(":", 70, y);
+  doc.text("Disdukcapil Kabupaten Murung Raya", 75, y);
+  
+  y += 10;
+  doc.setFont("helvetica", "normal");
+  const paragraph = `Selama ${days} hari kerja, terhitung mulai tanggal ${startStr} sampai dengan tanggal ${endStr}, dengan ketentuan setelah berakhirnya jangka waktu cuti tersebut wajib melaporkan diri kembali dan melaksanakan tugas sebagaimana mestinya.`;
+  
+  const text1 = doc.splitTextToSize(paragraph, 170);
+  doc.text(text1, 20, y);
+  
+  y += 20;
+  const paragraph2 = `Demikian surat izin cuti ini dibuat untuk dapat dipergunakan sebagaimana mestinya.`;
+  const text2 = doc.splitTextToSize(paragraph2, 170);
+  doc.text(text2, 20, y);
+  
+  // Signature block
+  y += 25;
+  doc.text("Puruk Cahu, " + approvedDateStr, 130, y);
+  y += 5;
+  doc.setFont("helvetica", "bold");
+  doc.text("Disetujui Oleh:", 130, y);
+  y += 15;
+  doc.text(permit.approved_by, 130, y);
+  doc.setFont("helvetica", "normal");
+  doc.text("Pengawas / Administrator", 130, y + 4);
+  
+  // Add a nice QR code simulation or sign seal
+  doc.rect(20, y - 20, 22, 22);
+  doc.setFontSize(7);
+  doc.text("QR VERIFIED", 23, y - 10);
+  doc.setFontSize(5);
+  doc.text(permit.id, 21, y - 2);
+  
+  doc.save(`Surat_Cuti_${empName.replace(/\s+/g, '_')}_${permit.start_date}.pdf`);
+  showToast("Unduh PDF", "Surat Izin Cuti berhasil diunduh.", "success");
+};
 
 // Start core system
 document.addEventListener("DOMContentLoaded", initApp);
