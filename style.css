@@ -2253,6 +2253,19 @@ img, video, canvas {
   border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
+.permits-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+}
+
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
 @media (max-width: 1024px) {
   .permits-grid-container {
     grid-template-columns: 1fr !important;
@@ -2261,9 +2274,30 @@ img, video, canvas {
 
 /* --- ENHANCED RESPONSIVE RULES --- */
 @media (max-width: 768px) {
+  html, body {
+    width: 100% !important;
+    overflow-x: hidden;
+  }
+  
+  #app-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .view-section {
+    width: 100% !important;
+    padding: 0 10px 20px 10px !important;
+  }
+  
+  .employee-grid {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+  
   .employee-permits-card,
   .admin-permits-card {
     padding: 14px;
+    width: 100% !important;
   }
   
   .permits-grid-container {
@@ -2361,7 +2395,7 @@ img, video, canvas {
 }
 
 @media (max-width: 480px) {
-  .permits-grid-container form div[style*="grid-template-columns: 1fr 1fr"] {
+  .form-row-2col {
     grid-template-columns: 1fr !important;
   }
   

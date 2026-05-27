@@ -3806,18 +3806,34 @@ function renderAdminPermits() {
       badgeClass = 'terlambat';
     }
     
+    let deleteBtnHtml = '';
+    if (state.currentUser && state.currentUser.role === 'admin') {
+      deleteBtnHtml = `<button class="btn btn-danger btn-sm" onclick="deletePermit('${p.id}')" style="padding: 4px 8px; font-size: 0.75rem; background: var(--error); border-color: var(--error); color: white; margin-left: 6px;" title="Hapus Pengajuan"><i class="fa-solid fa-trash"></i></button>`;
+    }
+    
     let actionHtml = '';
     if (p.status === 'pending') {
       actionHtml = `
-        <div style="display:flex; gap:6px;">
+        <div style="display:flex; gap:6px; align-items:center;">
           <button class="btn btn-success btn-sm" onclick="approvePermit('${p.id}')" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-check"></i> Setuju</button>
           <button class="btn btn-danger btn-sm" onclick="rejectPermit('${p.id}')" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-xmark"></i> Tolak</button>
+          ${deleteBtnHtml}
         </div>
       `;
     } else if (p.permit_type === 'cuti' && p.status === 'approved') {
-      actionHtml = `<button class="btn btn-secondary btn-sm" onclick="downloadLeavePDF('${p.id}')" style="padding: 4px 8px; font-size: 0.75rem; background: var(--violet); border-color: var(--violet); color: white;"><i class="fa-solid fa-file-pdf"></i> Surat Cuti</button>`;
+      actionHtml = `
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="btn btn-secondary btn-sm" onclick="downloadLeavePDF('${p.id}')" style="padding: 4px 8px; font-size: 0.75rem; background: var(--violet); border-color: var(--violet); color: white;"><i class="fa-solid fa-file-pdf"></i> Surat Cuti</button>
+          ${deleteBtnHtml}
+        </div>
+      `;
     } else {
-      actionHtml = `<span style="font-size:0.8rem; color:var(--text-tertiary);">${p.approved_by || '-'}</span>`;
+      actionHtml = `
+        <div style="display:flex; gap:6px; align-items:center; justify-content:space-between; width:100%;">
+          <span style="font-size:0.8rem; color:var(--text-tertiary);">${p.approved_by || '-'}</span>
+          ${deleteBtnHtml}
+        </div>
+      `;
     }
     
     const tr = document.createElement('tr');
@@ -3926,6 +3942,34 @@ window.rejectPermit = function(id) {
   db.save();
   renderAdminPermits();
   showToast("Pengajuan Ditolak", `Pengajuan ${permit.permit_type} telah ditolak.`, "info");
+};
+
+window.deletePermit = async function(id) {
+  if (!confirm('Apakah Anda yakin ingin menghapus pengajuan izin/cuti ini? Seluruh data pengajuan dan log absensi terkait akan dihapus permanen.')) return;
+  const permit = db.permits.find(p => p.id === id);
+  if (!permit) return;
+  
+  // Clean up generated attendances
+  const start = new Date(permit.start_date);
+  const end = new Date(permit.end_date);
+  let loop = new Date(start);
+  while (loop <= end) {
+    const dateStr = loop.toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).split(' ')[0];
+    const attId = `att-permit-${dateStr}-${permit.user_id}`;
+    db.attendances = db.attendances.filter(a => a.id !== attId);
+    loop.setDate(loop.getDate() + 1);
+  }
+  
+  // Remove permit
+  db.permits = db.permits.filter(p => p.id !== id);
+  
+  await db.save();
+  renderAdminPermits();
+  renderAdminTable();
+  renderAdminDashboardKPIs();
+  renderAdminRekapJabatan();
+  renderAdminRekapBulanan();
+  showToast("Pengajuan Dihapus", `Pengajuan ${permit.permit_type} berhasil dihapus.`, "info");
 };
 
 window.downloadLeavePDF = function(permitId) {
@@ -4205,7 +4249,7 @@ window.downloadLeavePDF = function(permitId) {
   // --- SYSTEM METADATA / APPROVAL NOTE ---
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
-  doc.text('Disetujui oleh: ' + (permit.approved_by || '-'), 20, 275);
+  doc.text('Diverifikasi oleh: ' + (permit.approved_by || '-'), 20, 275);
   
   doc.save('Surat_Cuti_' + empName.replace(/\s+/g, '_') + '_' + permit.start_date + '.pdf');
   showToast("Unduh PDF", "Surat Izin Cuti berhasil diunduh.", "success");

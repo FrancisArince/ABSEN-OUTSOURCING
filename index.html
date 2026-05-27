@@ -290,9 +290,9 @@
             <p class="section-desc">Formulir pengajuan izin tidak masuk, sakit, atau cuti tahunan.</p>
           </div>
 
-          <div class="permits-grid-container" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px;">
+          <div class="permits-grid-container">
             <!-- Form Pengajuan -->
-            <div style="background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+            <div style="background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); min-width: 0;">
               <form id="form-submit-permit">
                 <div class="form-group" style="margin-bottom: 15px;">
                   <label>Jenis Pengajuan</label>
@@ -302,7 +302,7 @@
                     <option value="cuti">Cuti Tahunan</option>
                   </select>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                <div class="form-row-2col">
                   <div class="form-group">
                     <label>Tanggal Mulai</label>
                     <input type="date" id="permit-start-date" required class="filter-date-input" style="width: 100%; box-sizing: border-box;">
@@ -329,7 +329,7 @@
             </div>
 
             <!-- List Pengajuan -->
-            <div>
+            <div style="min-width: 0;">
               <h4 style="margin-bottom: 12px; font-weight: 600; color: var(--text-secondary);"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pengajuan Anda</h4>
               <div class="table-scroll-container" style="max-height: 380px;">
                 <table class="modern-table">
