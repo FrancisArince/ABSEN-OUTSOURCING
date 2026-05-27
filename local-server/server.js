@@ -23,10 +23,16 @@ db.serialize(() => {
       email TEXT,
       password TEXT,
       position TEXT,
+      shift TEXT,
       avatar TEXT,
-      photo TEXT
+      photo TEXT,
+      face_descriptor TEXT
     )
   `);
+
+  // Migrations for existing users table
+  db.run("ALTER TABLE users ADD COLUMN shift TEXT", (err) => {});
+  db.run("ALTER TABLE users ADD COLUMN face_descriptor TEXT", (err) => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS attendances (
@@ -50,9 +56,17 @@ db.serialize(() => {
       user_id TEXT,
       date TEXT,
       task_description TEXT,
+      verified INTEGER DEFAULT 0,
+      verified_by TEXT,
+      verified_at TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
+
+  // Migrations for existing journals table
+  db.run("ALTER TABLE journals ADD COLUMN verified INTEGER DEFAULT 0", (err) => {});
+  db.run("ALTER TABLE journals ADD COLUMN verified_by TEXT", (err) => {});
+  db.run("ALTER TABLE journals ADD COLUMN verified_at TEXT", (err) => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS calendars (
@@ -258,6 +272,24 @@ app.post(['/api/settings', '/api/setting'], async (req, res) => {
   res.json({ success: true });
 });
 
+async function ensurePermitsTableSQLite() {
+  await queryRun(`
+    CREATE TABLE IF NOT EXISTS permits (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      permit_type TEXT,
+      start_date TEXT,
+      end_date TEXT,
+      reason TEXT,
+      doctor_letter_number TEXT,
+      status TEXT DEFAULT 'pending',
+      approved_by TEXT,
+      approved_at TEXT,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+  `);
+}
+
 // 6. PERMITS
 app.get(['/api/permits', '/api/permit'], async (req, res) => {
   const user_id = req.query.user_id;
@@ -268,31 +300,80 @@ app.get(['/api/permits', '/api/permit'], async (req, res) => {
     params.push(user_id);
   }
   sql += " ORDER BY permits.start_date DESC";
-  const permits = await queryAll(sql, params);
-  res.json({ success: true, permits });
+  
+  try {
+    const permits = await queryAll(sql, params);
+    res.json({ success: true, permits });
+  } catch (err) {
+    if (err.message && err.message.includes('no such table: permits')) {
+      await ensurePermitsTableSQLite();
+      const permits = await queryAll(sql, params);
+      res.json({ success: true, permits });
+    } else {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
 });
 
 app.post(['/api/permits', '/api/permit'], async (req, res) => {
   const { action, id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status, approved_by, approved_at } = req.body;
-  if (action === 'create') {
-    await queryRun(
-      "INSERT INTO permits (id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [id, user_id, permit_type, start_date, end_date, reason || null, doctor_letter_number || null, 'pending']
-    );
-    res.json({ success: true });
-  } else if (action === 'update') {
-    await queryRun(
-      "UPDATE permits SET status = ?, approved_by = ?, approved_at = ? WHERE id = ?",
-      [status, approved_by || null, approved_at || null, id]
-    );
-    res.json({ success: true });
+  try {
+    if (action === 'create') {
+      try {
+        await queryRun(
+          "INSERT INTO permits (id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [id, user_id, permit_type, start_date, end_date, reason || null, doctor_letter_number || null, 'pending']
+        );
+      } catch (err) {
+        if (err.message && err.message.includes('no such table: permits')) {
+          await ensurePermitsTableSQLite();
+          await queryRun(
+            "INSERT INTO permits (id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [id, user_id, permit_type, start_date, end_date, reason || null, doctor_letter_number || null, 'pending']
+          );
+        } else {
+          throw err;
+        }
+      }
+      res.json({ success: true });
+    } else if (action === 'update') {
+      try {
+        await queryRun(
+          "UPDATE permits SET status = ?, approved_by = ?, approved_at = ? WHERE id = ?",
+          [status, approved_by || null, approved_at || null, id]
+        );
+      } catch (err) {
+        if (err.message && err.message.includes('no such table: permits')) {
+          await ensurePermitsTableSQLite();
+          await queryRun(
+            "UPDATE permits SET status = ?, approved_by = ?, approved_at = ? WHERE id = ?",
+            [status, approved_by || null, approved_at || null, id]
+          );
+        } else {
+          throw err;
+        }
+      }
+      res.json({ success: true });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 app.delete(['/api/permits', '/api/permit', '/api/permits/:id', '/api/permit/:id'], async (req, res) => {
   const id = req.query.id || req.params.id;
-  await queryRun("DELETE FROM permits WHERE id = ?", [id]);
-  res.json({ success: true });
+  try {
+    await queryRun("DELETE FROM permits WHERE id = ?", [id]);
+    res.json({ success: true });
+  } catch (err) {
+    if (err.message && err.message.includes('no such table: permits')) {
+      await ensurePermitsTableSQLite();
+      await queryRun("DELETE FROM permits WHERE id = ?", [id]);
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
 });
 
 // 5. EXPORT JOURNAL TO PDF

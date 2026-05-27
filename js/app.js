@@ -3682,8 +3682,9 @@ function renderAdminPermits() {
   
   permits.forEach(p => {
     const emp = db.users.find(u => u.id === p.user_id);
-    const empName = emp ? emp.name : 'N/A';
-    const empPos = emp ? emp.position : 'N/A';
+    const empName = emp ? emp.name : (p.name || 'N/A');
+    const empPos = emp ? emp.position : (p.position || 'N/A');
+    const empAvatar = emp ? emp.avatar : (p.name ? p.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?');
     
     const start = new Date(p.start_date);
     const end = new Date(p.end_date);
@@ -3725,7 +3726,7 @@ function renderAdminPermits() {
     tr.innerHTML = `
       <td>
         <div class="cell-employee">
-          <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.7rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white;">${emp ? emp.avatar : '?'}</div>
+          <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.7rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white;">${empAvatar}</div>
           <div class="cell-meta">
             <span class="cell-name">${empName}</span>
             <span class="cell-role" style="font-size:0.72rem;">${empPos}</span>
