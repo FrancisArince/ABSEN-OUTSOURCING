@@ -105,6 +105,42 @@ db.serialize(() => {
       `);
     }
   });
+
+  // Seed demo employees u-1 and u-2 if not exists
+  db.get("SELECT id FROM users WHERE email = 'karyawan@disdukcapil.go.id'", (err, row) => {
+    if (!row) {
+      db.run(`
+        INSERT INTO users (id, name, role, email, password, position, avatar, photo, shift)
+        VALUES (
+          'u-1', 'John Doe', 'karyawan', 'karyawan@disdukcapil.go.id', 'password123', 'Staf Teknis Lapangan', 'JD', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150', 'siang'
+        )
+      `);
+    }
+  });
+
+  db.get("SELECT id FROM users WHERE email = 'sarah.amelia@disdukcapil.go.id'", (err, row) => {
+    if (!row) {
+      db.run(`
+        INSERT INTO users (id, name, role, email, password, position, avatar, photo, shift)
+        VALUES (
+          'u-2', 'Sarah Amelia', 'karyawan', 'sarah.amelia@disdukcapil.go.id', 'password123', 'Staf Administrasi & Pelayanan', 'SA', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', 'siang'
+        )
+      `);
+    }
+  });
+
+  // Seed demo permits if empty
+  db.get("SELECT COUNT(*) as count FROM permits", (err, row) => {
+    if (row && row.count === 0) {
+      db.run(`
+        INSERT INTO permits (id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status, approved_by, approved_at)
+        VALUES 
+        ('pm-seed-1', 'u-1', 'cuti', '2026-05-25', '2026-05-27', 'Acara pernikahan keluarga di Solo', NULL, 'approved', 'Budi Santoso', '2026-05-24T10:00:00Z'),
+        ('pm-seed-2', 'u-2', 'izin', '2026-06-01', '2026-06-01', 'Mengurus perpanjangan SIM', NULL, 'pending', NULL, NULL),
+        ('pm-seed-3', 'u-2', 'sakit', '2026-05-20', '2026-05-22', 'Demam tinggi dan flu berat', 'SKD/987/DISDUKCAPIL', 'approved', 'Budi Santoso', '2026-05-19T08:30:00Z')
+      `);
+    }
+  });
 });
 
 // Helper: Run query and return promise
@@ -288,6 +324,12 @@ async function ensurePermitsTableSQLite() {
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
+  // Ensure all columns exist dynamically for pre-existing SQLite tables
+  try { await queryRun('ALTER TABLE permits ADD COLUMN reason TEXT'); } catch(e){}
+  try { await queryRun('ALTER TABLE permits ADD COLUMN doctor_letter_number TEXT'); } catch(e){}
+  try { await queryRun('ALTER TABLE permits ADD COLUMN status TEXT DEFAULT \'pending\''); } catch(e){}
+  try { await queryRun('ALTER TABLE permits ADD COLUMN approved_by TEXT'); } catch(e){}
+  try { await queryRun('ALTER TABLE permits ADD COLUMN approved_at TEXT'); } catch(e){}
 }
 
 // 6. PERMITS

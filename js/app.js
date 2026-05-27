@@ -142,21 +142,32 @@ class AppDatabase {
   }
 
   async syncFromBackend() {
+    // 1. Users
     try {
       const resUsers = await fetch('/api/users').then(r => r.json());
-      if (resUsers.success) {
+      if (resUsers && resUsers.success) {
         this.users = resUsers.users;
         this._serverUsers = JSON.parse(JSON.stringify(this.users));
       }
+    } catch (err) {
+      console.error("Failed to sync users:", err);
+    }
 
+    // 2. Attendances
+    try {
       const resAttendances = await fetch('/api/attendance').then(r => r.json());
-      if (resAttendances.success) {
+      if (resAttendances && resAttendances.success) {
         this.attendances = resAttendances.attendances;
         this._serverAttendances = JSON.parse(JSON.stringify(this.attendances));
       }
+    } catch (err) {
+      console.error("Failed to sync attendances:", err);
+    }
 
+    // 3. Journals
+    try {
       const resJournals = await fetch('/api/journal').then(r => r.json());
-      if (resJournals.success) {
+      if (resJournals && resJournals.success) {
         // Automatically clean up orphaned journals that have no matching attendance record
         const validJournals = resJournals.journals.filter(j => 
           this.attendances.some(a => a.user_id === j.user_id && a.date === j.date)
@@ -174,22 +185,38 @@ class AppDatabase {
         this.journals = validJournals;
         this._serverJournals = JSON.parse(JSON.stringify(this.journals));
       }
+    } catch (err) {
+      console.error("Failed to sync journals:", err);
+    }
 
+    // 4. Calendars
+    try {
       const resCalendars = await fetch('/api/calendar').then(r => r.json());
-      if (resCalendars.success) {
+      if (resCalendars && resCalendars.success) {
         this.calendars = resCalendars.calendars;
         this._serverCalendars = JSON.parse(JSON.stringify(this.calendars));
       }
+    } catch (err) {
+      console.error("Failed to sync calendars:", err);
+    }
 
+    // 5. Permits
+    try {
       const resPermits = await fetch('/api/permit').then(r => r.json());
       if (resPermits && resPermits.success) {
         this.permits = resPermits.permits;
         this._serverPermits = JSON.parse(JSON.stringify(this.permits));
+      } else {
+        console.error("Failed to load permits from backend:", resPermits ? resPermits.error : "Unknown error");
       }
+    } catch (err) {
+      console.error("Failed to sync permits:", err);
+    }
 
-      // Load global settings from database
+    // 6. Settings
+    try {
       const resSettings = await fetch('/api/settings').then(r => r.json());
-      if (resSettings.success && resSettings.settings) {
+      if (resSettings && resSettings.success && resSettings.settings) {
         const s = resSettings.settings;
         if (s.office_lat) {
           OFFICE_LAT = parseFloat(s.office_lat);
@@ -214,7 +241,7 @@ class AppDatabase {
         }
       }
     } catch (err) {
-      console.error("Backend sync failed:", err);
+      console.error("Failed to sync settings:", err);
     }
   }
 
@@ -338,26 +365,55 @@ class AppDatabase {
     }
 
     // 5. Permits Differential Sync
+    const successfullySyncedPermitIds = new Set(this._serverPermits.map(s => s.id));
     for (const p of this.permits) {
       const sp = this._serverPermits.find(s => s.id === p.id);
-      if (!sp) {
-        await fetch('/api/permit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'create', ...p })
-        });
-      } else if (sp.status !== p.status) {
-        await fetch('/api/permit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'update', ...p })
-        });
+      try {
+        if (!sp) {
+          const resp = await fetch('/api/permit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'create', ...p })
+          });
+          const resJson = await resp.json();
+          if (resJson && resJson.success) {
+            successfullySyncedPermitIds.add(p.id);
+          } else {
+            console.error("Failed to save permit:", resJson.error);
+            showToast("Sinkronisasi Gagal", `Gagal menyimpan pengajuan: ${resJson.error || 'Server error'}`, "error");
+          }
+        } else if (sp.status !== p.status) {
+          const resp = await fetch('/api/permit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update', ...p })
+          });
+          const resJson = await resp.json();
+          if (resJson && resJson.success) {
+            const idx = this._serverPermits.findIndex(s => s.id === p.id);
+            if (idx !== -1) this._serverPermits[idx].status = p.status;
+          } else {
+            console.error("Failed to update permit:", resJson.error);
+            showToast("Sinkronisasi Gagal", `Gagal memperbarui status pengajuan: ${resJson.error || 'Server error'}`, "error");
+          }
+        }
+      } catch (err) {
+        console.error("Network error syncing permit:", err);
+        showToast("Error Koneksi", "Gagal menghubungi server untuk menyimpan data pengajuan.", "error");
       }
     }
     for (const sp of this._serverPermits) {
       const stillExists = this.permits.some(p => p.id === sp.id);
       if (!stillExists) {
-        await fetch(`/api/permit?id=${sp.id}`, { method: 'DELETE' });
+        try {
+          const resp = await fetch(`/api/permit?id=${sp.id}`, { method: 'DELETE' });
+          const resJson = await resp.json();
+          if (resJson && resJson.success) {
+            this._serverPermits = this._serverPermits.filter(s => s.id !== sp.id);
+          }
+        } catch (err) {
+          console.error("Network error deleting permit:", err);
+        }
       }
     }
 
@@ -366,7 +422,7 @@ class AppDatabase {
     this._serverAttendances = JSON.parse(JSON.stringify(this.attendances));
     this._serverJournals = JSON.parse(JSON.stringify(this.journals));
     this._serverCalendars = JSON.parse(JSON.stringify(this.calendars));
-    this._serverPermits = JSON.parse(JSON.stringify(this.permits));
+    this._serverPermits = this.permits.filter(p => successfullySyncedPermitIds.has(p.id) || this._serverPermits.some(s => s.id === p.id && s.status === p.status));
   }
 
   getUserByEmail(email) {

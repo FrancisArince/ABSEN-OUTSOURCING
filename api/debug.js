@@ -20,6 +20,15 @@ module.exports = async (req, res) => {
       FROM journals ORDER BY date DESC LIMIT 20
     `);
 
+    let permits = [];
+    let permitsError = null;
+    try {
+      const permitsRes = await db.query('SELECT * FROM permits LIMIT 20');
+      permits = permitsRes.rows;
+    } catch (e) {
+      permitsError = e.message;
+    }
+
     const tableInfo = await db.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
@@ -37,6 +46,9 @@ module.exports = async (req, res) => {
       users: users.rows,
       journals_count: journals.rows.length,
       journals: journals.rows,
+      permits_count: Array.isArray(permits) ? permits.length : 0,
+      permits: permits,
+      permits_error: permitsError,
       attendances_table_columns: tableInfo.rows
     }, null, 2));
   } catch (error) {

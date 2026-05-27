@@ -202,6 +202,57 @@ module.exports = async (req, res) => {
       }
     }
 
+    // 3. Seed permits if empty
+    const permitCheck = await db.query('SELECT COUNT(*) FROM permits');
+    if (parseInt(permitCheck.rows[0].count) === 0) {
+      const MOCK_PERMITS = [
+        {
+          id: "pm-seed-1",
+          user_id: "u-1",
+          permit_type: "cuti",
+          start_date: "2026-05-25",
+          end_date: "2026-05-27",
+          reason: "Acara pernikahan keluarga di Solo",
+          doctor_letter_number: null,
+          status: "approved",
+          approved_by: "Francis Arince Victory",
+          approved_at: "2026-05-24T10:00:00Z"
+        },
+        {
+          id: "pm-seed-2",
+          user_id: "u-2",
+          permit_type: "izin",
+          start_date: "2026-06-01",
+          end_date: "2026-06-01",
+          reason: "Mengurus perpanjangan SIM",
+          doctor_letter_number: null,
+          status: "pending",
+          approved_by: null,
+          approved_at: null
+        },
+        {
+          id: "pm-seed-3",
+          user_id: "u-2",
+          permit_type: "sakit",
+          start_date: "2026-05-20",
+          end_date: "2026-05-22",
+          reason: "Demam tinggi dan flu berat",
+          doctor_letter_number: "SKD/987/DISDUKCAPIL",
+          status: "approved",
+          approved_by: "Francis Arince Victory",
+          approved_at: "2026-05-19T08:30:00Z"
+        }
+      ];
+
+      for (const p of MOCK_PERMITS) {
+        await db.query(
+          `INSERT INTO permits (id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status, approved_by, approved_at) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [p.id, p.user_id, p.permit_type, p.start_date, p.end_date, p.reason, p.doctor_letter_number, p.status, p.approved_by, p.approved_at]
+        );
+      }
+    }
+
     res.statusCode = 200;
     res.end(JSON.stringify({ success: true, message: "Database initialized successfully" }));
   } catch (error) {

@@ -29,6 +29,12 @@ async function ensurePermitsTablePG() {
       approved_at TIMESTAMP
     );
   `);
+  // Ensure all columns exist dynamically for pre-existing tables
+  try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS reason TEXT;'); } catch(e){}
+  try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS doctor_letter_number VARCHAR(100);'); } catch(e){}
+  try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT \'pending\';'); } catch(e){}
+  try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS approved_by VARCHAR(100);'); } catch(e){}
+  try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP;'); } catch(e){}
 }
 
 module.exports = async (req, res) => {
