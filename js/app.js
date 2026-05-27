@@ -3960,12 +3960,12 @@ window.downloadLeavePDF = function(permitId) {
   });
   
   // --- KOP SURAT with Logo ---
-  const headerCenterX = 115;
+  const headerCenterX = 116;
   
   // Add logo if available
   if (LOGO_BASE64) {
     try {
-      doc.addImage(LOGO_BASE64, 'PNG', 22, 10, 22, 25);
+      doc.addImage(LOGO_BASE64, 'PNG', 20, 8, 22, 25);
     } catch (e) {
       console.warn('Failed to add logo to PDF:', e);
     }
@@ -3973,24 +3973,84 @@ window.downloadLeavePDF = function(permitId) {
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("PEMERINTAH KABUPATEN MURUNG RAYA", headerCenterX, 16, { align: "center" });
+  doc.text("PEMERINTAH KABUPATEN MURUNG RAYA", headerCenterX, 14, { align: "center" });
   doc.setFontSize(13);
-  doc.text("DINAS KEPENDUDUKAN DAN", headerCenterX, 22, { align: "center" });
-  doc.text("PENCATATAN SIPIL", headerCenterX, 27, { align: "center" });
+  doc.text("DINAS KEPENDUDUKAN DAN PENCATATAN SIPIL", headerCenterX, 20, { align: "center" });
+  
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("JL. Bina Praja No.     Puruk Cahu, Kode Pos 73911", headerCenterX, 33, { align: "center" });
+  doc.text("Jl. Bina Praja No. Puruk Cahu Kode Pos 73911", headerCenterX, 25, { align: "center" });
+  
+  // Segmented contact details line
+  doc.setFontSize(8);
+  
+  doc.setFont("helvetica", "italic");
+  const w1 = doc.getTextWidth("Telp. ");
+  
+  doc.setFont("helvetica", "normal");
+  const w2 = doc.getTextWidth("(0828) 31813 ");
+  
+  doc.setFont("helvetica", "italic");
+  const w3 = doc.getTextWidth("Fax. ");
+  
+  doc.setFont("helvetica", "normal");
+  const w4 = doc.getTextWidth("(0528) 31814 ");
+  
+  doc.setFont("helvetica", "italic");
+  const w5 = doc.getTextWidth("Email. ");
+  
+  doc.setFont("helvetica", "normal");
+  const w6 = doc.getTextWidth("disdukcapil@murungrayakab.go.id");
+  
+  const totalWidth = w1 + w2 + w3 + w4 + w5 + w6;
+  const contactStartX = headerCenterX - (totalWidth / 2);
+  let currentX = contactStartX;
+  const contactY = 30;
+  
+  doc.setFont("helvetica", "italic");
+  doc.text("Telp. ", currentX, contactY);
+  currentX += w1;
+  
+  doc.setFont("helvetica", "normal");
+  doc.text("(0828) 31813 ", currentX, contactY);
+  currentX += w2;
+  
+  doc.setFont("helvetica", "italic");
+  doc.text("Fax. ", currentX, contactY);
+  currentX += w3;
+  
+  doc.setFont("helvetica", "normal");
+  doc.text("(0528) 31814 ", currentX, contactY);
+  currentX += w4;
+  
+  doc.setFont("helvetica", "italic");
+  doc.text("Email. ", currentX, contactY);
+  currentX += w5;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 255);
+  doc.text("disdukcapil@murungrayakab.go.id", currentX, contactY);
+  
+  // Draw underline for email
+  doc.setDrawColor(0, 0, 255);
+  doc.setLineWidth(0.1);
+  doc.line(currentX, contactY + 0.5, currentX + w6, contactY + 0.5);
+  
+  // Reset colors and linewidth
+  doc.setTextColor(0, 0, 0);
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.25);
   
   // Double line separator
   doc.setLineWidth(0.8);
-  doc.line(20, 37, 190, 37);
+  doc.line(20, 34, 190, 34);
   doc.setLineWidth(0.25);
-  doc.line(20, 38.5, 190, 38.5);
+  doc.line(20, 35.5, 190, 35.5);
   
   // Title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.text("SURAT IZIN CUTI TAHUNAN", 105, 48, { align: "center" });
+  doc.text("SURAT IZIN CUTI TAHUNAN", 105, 45, { align: "center" });
   
   // Reference number from approval (leave_letter_number)
   doc.setFont("helvetica", "normal");
@@ -3998,14 +4058,14 @@ window.downloadLeavePDF = function(permitId) {
   const refNo = permit.leave_letter_number 
     ? 'Nomor: ' + permit.leave_letter_number
     : 'Nomor: -';
-  doc.text(refNo, 105, 54, { align: "center" });
+  doc.text(refNo, 105, 51, { align: "center" });
   
   // Underline title
   doc.setLineWidth(0.3);
-  doc.line(70, 55, 140, 55);
+  doc.line(70, 52, 140, 52);
   
   // Body opening
-  let y = 66;
+  let y = 62;
   doc.setFontSize(10);
   doc.text("Diberikan izin cuti tahunan kepada Pegawai Outsourcing berikut:", 20, y);
   
@@ -4131,14 +4191,21 @@ window.downloadLeavePDF = function(permitId) {
   doc.text("Pencatatan Sipil", sigX, y + 4);
   doc.text("Kabupaten Murung Raya", sigX, y + 8);
   
-  y += 28;
-  doc.setFontSize(10);
+  y += 32;
   doc.setFont("helvetica", "bold");
-  doc.text("____________________________", sigX, y);
+  doc.setFontSize(10);
+  doc.text("GEMA TOPANDAS TIDJA, S.Sos., M.M", sigX, y);
   y += 5;
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Pembina Tingkat I (IV/b)", sigX, y);
+  y += 5;
+  doc.text("NIP. 19781005 200701 1 008", sigX, y);
+  
+  // --- SYSTEM METADATA / APPROVAL NOTE ---
+  doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
-  doc.text('Disetujui oleh: ' + (permit.approved_by || '-'), sigX, y);
+  doc.text('Disetujui oleh: ' + (permit.approved_by || '-'), 20, 275);
   
   doc.save('Surat_Cuti_' + empName.replace(/\s+/g, '_') + '_' + permit.start_date + '.pdf');
   showToast("Unduh PDF", "Surat Izin Cuti berhasil diunduh.", "success");
