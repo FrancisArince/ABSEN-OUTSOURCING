@@ -2377,6 +2377,48 @@ function renderAdminEmployees() {
   });
 }
 
+function renderAdminSupervisors() {
+  const tbody = document.getElementById('admin-supervisor-table-body');
+  if (!tbody) return;
+  const supervisors = db.users.filter(u => u.role === 'pengawas');
+  tbody.innerHTML = '';
+  
+  supervisors.forEach(spv => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="cell-employee">
+          <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.7rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--violet); color: white;">${spv.avatar}</div>
+          <span class="cell-name">${spv.name}</span>
+        </div>
+      </td>
+      <td>${spv.email}</td>
+      <td>
+        ${state.currentUser && state.currentUser.role === 'admin' ? `<button class="btn-delete-row" onclick="deleteSupervisor('${spv.id}')">
+          <i class="fa-solid fa-trash"></i> Hapus
+        </button>` : '<span style="color:var(--text-tertiary); font-size:0.8rem;">-</span>'}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (supervisors.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center" style="padding: 20px; color: var(--text-secondary);">Belum ada pengawas yang diatur.</td></tr>';
+  }
+}
+
+window.deleteSupervisor = function(id) {
+  if (!confirm('Apakah Anda yakin ingin menghapus pengawas ini? Seluruh log kehadirannya akan tetap ada namun profilnya terhapus.')) return;
+  db.users = db.users.filter(u => u.id !== id);
+  db.save();
+  renderAdminSupervisors();
+  renderAdminTable();
+  renderAdminDashboardKPIs();
+  renderAdminRekapJabatan();
+  populateRekapJurnalKaryawanDropdown();
+  showToast("Pengawas Dihapus", "Pengawas berhasil dihapus dari sistem.", "info");
+};
+
 window.deleteEmployee = function(id) {
   if (!confirm('Apakah Anda yakin ingin menghapus karyawan ini? Seluruh log kehadirannya akan tetap ada namun profilnya terhapus.')) return;
   db.users = db.users.filter(u => u.id !== id);
@@ -2944,6 +2986,19 @@ function loginSessionStart(user) {
     const addEmpBtn = document.getElementById('btn-add-employee-modal');
     if (addEmpBtn) addEmpBtn.style.display = isPengawas ? 'none' : '';
 
+    // Supervisor management card
+    const supervisorMgmtPanel = document.getElementById('admin-supervisor-mgmt-panel');
+    if (supervisorMgmtPanel) supervisorMgmtPanel.style.display = isPengawas ? 'none' : '';
+
+    const gridContainer = document.querySelector('.admin-grid-management');
+    if (gridContainer) {
+      if (isPengawas) {
+        gridContainer.classList.remove('admin-view');
+      } else {
+        gridContainer.classList.add('admin-view');
+      }
+    }
+
     // Radar Koordinat Kantor
     const btnUpdateOffice = document.getElementById('btn-update-office-gps');
     if (btnUpdateOffice) btnUpdateOffice.style.display = isPengawas ? 'none' : '';
@@ -2965,6 +3020,7 @@ function loginSessionStart(user) {
     renderAdminDashboardKPIs();
     renderAdminRekapJabatan();
     renderAdminEmployees();
+    renderAdminSupervisors();
     renderAdminCalendars();
     renderAdminTable();
     renderAdminCharts();
@@ -3139,6 +3195,8 @@ function setupEventListeners() {
       // Re-render all admin panels with latest data
       renderAdminDashboardKPIs();
       renderAdminRekapJabatan();
+      renderAdminEmployees();
+      renderAdminSupervisors();
       renderAdminTable();
       renderAdminCharts();
       renderAdminRekapBulanan();
@@ -3197,6 +3255,23 @@ function setupEventListeners() {
       // Reset role dropdown & show jabatan/shift
       if (DOM.addEmpAccountRole) DOM.addEmpAccountRole.value = 'karyawan';
       toggleAddEmpRoleFields('karyawan');
+    });
+  }
+
+  const btnAddSupervisorModal = document.getElementById('btn-add-supervisor-modal');
+  if (btnAddSupervisorModal) {
+    btnAddSupervisorModal.addEventListener('click', () => {
+      DOM.modalAddEmployee.classList.remove('hidden');
+      DOM.addEmpPhotoPreview.src = "https://via.placeholder.com/100?text=Wajah";
+      DOM.addEmpPhotoData.value = "";
+      DOM.addEmpWebcam.style.display = "none";
+      DOM.addEmpPhotoPreview.style.display = "block";
+      DOM.btnAddEmpCamera.style.display = "inline-block";
+      DOM.btnAddEmpCapture.style.display = "none";
+      DOM.btnAddEmpCamera.innerHTML = '<i class="fa-solid fa-camera"></i> Nyalakan Kamera';
+      // Reset role dropdown to \'pengawas\' & hide jabatan/shift
+      if (DOM.addEmpAccountRole) DOM.addEmpAccountRole.value = 'pengawas';
+      toggleAddEmpRoleFields('pengawas');
     });
   }
 
@@ -3324,6 +3399,7 @@ function setupEventListeners() {
       DOM.addEmpPhotoData.removeAttribute('data-descriptor');
       
       renderAdminEmployees();
+      renderAdminSupervisors();
       renderAdminDashboardKPIs();
       renderAdminRekapJabatan();
       renderAdminRekapBulanan();

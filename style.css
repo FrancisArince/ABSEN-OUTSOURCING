@@ -2188,9 +2188,31 @@ img, video, canvas {
   box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
 }
 
-.admin-employee-mgmt-card {
+.admin-employee-mgmt-card,
+.admin-supervisor-mgmt-card {
   padding: 24px;
 }
+
+.admin-grid-management {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-grid-management.admin-view .admin-calendar-mgmt-card {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1024px) {
+  .admin-grid-management {
+    grid-template-columns: 1fr;
+  }
+  .admin-grid-management.admin-view .admin-calendar-mgmt-card {
+    grid-column: auto;
+  }
+}
+
 
 .btn-delete-row {
   color: var(--error);

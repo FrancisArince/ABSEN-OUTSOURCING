@@ -531,8 +531,8 @@
           </div>
         </div>
 
-        <!-- EMPLOYEE & CALENDAR MANAGEMENT PANEL -->
-        <div class="admin-grid-management" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <!-- EMPLOYEE, SUPERVISOR & CALENDAR MANAGEMENT PANEL -->
+        <div class="admin-grid-management">
           <!-- 1. Employee Management -->
           <div class="admin-employee-mgmt-card glass-panel fade-in" style="margin-bottom: 0;">
             <div class="records-header" style="flex-wrap: wrap; gap: 10px;">
@@ -559,7 +559,31 @@
             </div>
           </div>
 
-          <!-- 2. Calendar Management -->
+          <!-- 2. Supervisor Management -->
+          <div class="admin-supervisor-mgmt-card glass-panel fade-in" id="admin-supervisor-mgmt-panel" style="margin-bottom: 0;">
+            <div class="records-header" style="flex-wrap: wrap; gap: 10px;">
+              <h3><i class="fa-solid fa-user-shield"></i> Pengawas Lapangan</h3>
+              <button id="btn-add-supervisor-modal" class="btn btn-violet btn-sm">
+                <i class="fa-solid fa-user-plus"></i> Tambah
+              </button>
+            </div>
+            <div class="table-scroll-container" style="max-height: 300px;">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-supervisor-table-body">
+                  <!-- Dynamically filled with supervisors -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. Calendar Management -->
           <div class="admin-calendar-mgmt-card glass-panel fade-in" style="margin-bottom: 0;">
             <div class="records-header" style="flex-wrap: wrap; gap: 10px;">
               <h3><i class="fa-regular fa-calendar-plus"></i> Manajemen Kalender & Libur</h3>
