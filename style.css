@@ -2268,7 +2268,8 @@ img, video, canvas {
 
 @media (max-width: 1024px) {
   .permits-grid-container {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 }
 
@@ -2301,6 +2302,8 @@ img, video, canvas {
   }
   
   .permits-grid-container {
+    display: flex !important;
+    flex-direction: column !important;
     gap: 16px !important;
   }
   
