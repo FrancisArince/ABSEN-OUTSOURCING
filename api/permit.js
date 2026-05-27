@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
           ORDER BY permits.start_date DESC
         `);
       } catch (err) {
-        if (err.code === '42P01' || err.message.includes('relation "permits" does not exist')) {
+        if (err.code === '42P01' || err.code === '42703' || err.message.includes('relation "permits" does not exist') || err.message.includes('column')) {
           await ensurePermitsTablePG();
           result = await db.query(`
             SELECT permits.id, permits.user_id,
@@ -103,7 +103,7 @@ module.exports = async (req, res) => {
             [id, user_id, permit_type, start_date, end_date, reason || null, doctor_letter_number || null]
           );
         } catch (err) {
-          if (err.code === '42P01' || err.message.includes('relation "permits" does not exist')) {
+          if (err.code === '42P01' || err.code === '42703' || err.message.includes('relation "permits" does not exist') || err.message.includes('column')) {
             await ensurePermitsTablePG();
             await db.query(
               `INSERT INTO permits (id, user_id, permit_type, start_date, end_date, reason, doctor_letter_number, status) 
@@ -128,7 +128,7 @@ module.exports = async (req, res) => {
             [status, approved_by || null, approved_at || null, lln || null, id]
           );
         } catch (err) {
-          if (err.code === '42P01' || err.message.includes('relation "permits" does not exist')) {
+          if (err.code === '42P01' || err.code === '42703' || err.message.includes('relation "permits" does not exist') || err.message.includes('column')) {
             await ensurePermitsTablePG();
             await db.query(
               `UPDATE permits 
@@ -150,7 +150,7 @@ module.exports = async (req, res) => {
       try {
         await db.query('DELETE FROM permits WHERE id = $1', [id]);
       } catch (err) {
-        if (err.code === '42P01' || err.message.includes('relation "permits" does not exist')) {
+        if (err.code === '42P01' || err.code === '42703' || err.message.includes('relation "permits" does not exist') || err.message.includes('column')) {
           await ensurePermitsTablePG();
           await db.query('DELETE FROM permits WHERE id = $1', [id]);
         } else {

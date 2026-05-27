@@ -80,9 +80,15 @@ module.exports = async (req, res) => {
         doctor_letter_number VARCHAR(100),
         status VARCHAR(20) DEFAULT 'pending',
         approved_by VARCHAR(100),
-        approved_at TIMESTAMP
+        approved_at TIMESTAMP,
+        leave_letter_number VARCHAR(100)
       );
     `);
+
+    // Migrate permits table for leave_letter_number column
+    try {
+      await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS leave_letter_number VARCHAR(100);');
+    } catch (e) {}
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS settings (

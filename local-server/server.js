@@ -89,9 +89,12 @@ db.serialize(() => {
       status TEXT DEFAULT 'pending',
       approved_by TEXT,
       approved_at TEXT,
+      leave_letter_number TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
+
+  db.run("ALTER TABLE permits ADD COLUMN leave_letter_number TEXT", (err) => {});
 
 
   // Seed demo admin if not exists
@@ -321,6 +324,7 @@ async function ensurePermitsTableSQLite() {
       status TEXT DEFAULT 'pending',
       approved_by TEXT,
       approved_at TEXT,
+      leave_letter_number TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
@@ -330,6 +334,7 @@ async function ensurePermitsTableSQLite() {
   try { await queryRun('ALTER TABLE permits ADD COLUMN status TEXT DEFAULT \'pending\''); } catch(e){}
   try { await queryRun('ALTER TABLE permits ADD COLUMN approved_by TEXT'); } catch(e){}
   try { await queryRun('ALTER TABLE permits ADD COLUMN approved_at TEXT'); } catch(e){}
+  try { await queryRun('ALTER TABLE permits ADD COLUMN leave_letter_number TEXT'); } catch(e){}
 }
 
 // 6. PERMITS
@@ -379,17 +384,18 @@ app.post(['/api/permits', '/api/permit'], async (req, res) => {
       }
       res.json({ success: true });
     } else if (action === 'update') {
+      const { leave_letter_number } = req.body;
       try {
         await queryRun(
-          "UPDATE permits SET status = ?, approved_by = ?, approved_at = ? WHERE id = ?",
-          [status, approved_by || null, approved_at || null, id]
+          "UPDATE permits SET status = ?, approved_by = ?, approved_at = ?, leave_letter_number = ? WHERE id = ?",
+          [status, approved_by || null, approved_at || null, leave_letter_number || null, id]
         );
       } catch (err) {
         if (err.message && err.message.includes('no such table: permits')) {
           await ensurePermitsTableSQLite();
           await queryRun(
-            "UPDATE permits SET status = ?, approved_by = ?, approved_at = ? WHERE id = ?",
-            [status, approved_by || null, approved_at || null, id]
+            "UPDATE permits SET status = ?, approved_by = ?, approved_at = ?, leave_letter_number = ? WHERE id = ?",
+            [status, approved_by || null, approved_at || null, leave_letter_number || null, id]
           );
         } else {
           throw err;
