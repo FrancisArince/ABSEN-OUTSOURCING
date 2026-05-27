@@ -2258,3 +2258,136 @@ img, video, canvas {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* --- ENHANCED RESPONSIVE RULES --- */
+@media (max-width: 768px) {
+  .employee-permits-card,
+  .admin-permits-card {
+    padding: 14px;
+  }
+  
+  .permits-grid-container {
+    gap: 16px !important;
+  }
+  
+  /* Make all tables horizontally scrollable on mobile */
+  .table-scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modern-table {
+    min-width: 600px;
+  }
+  
+  .admin-permits-card .modern-table {
+    min-width: 750px;
+  }
+  
+  /* Records header stacking */
+  .records-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+  
+  .records-header h3 {
+    font-size: 1rem;
+  }
+  
+  .section-desc {
+    font-size: 0.8rem;
+  }
+  
+  /* Form inputs full-width */
+  .permits-grid-container form .form-group input,
+  .permits-grid-container form .form-group select,
+  .permits-grid-container form .form-group textarea {
+    font-size: 0.9rem;
+  }
+  
+  /* Glass panel padding */
+  .glass-panel {
+    padding: 14px;
+  }
+  
+  /* KPI cards on mobile */
+  .kpi-card {
+    padding: 14px;
+  }
+  
+  .kpi-card .kpi-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* Admin header */
+  .admin-title-box h2 {
+    font-size: 1.1rem;
+  }
+  
+  .admin-title-box p {
+    font-size: 0.8rem;
+  }
+  
+  .admin-actions-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .admin-actions-bar .btn {
+    font-size: 0.78rem;
+    padding: 8px 12px;
+  }
+  
+  /* Employee card grid */
+  .employee-grid {
+    gap: 16px;
+  }
+  
+  /* Status widgets */
+  .status-widgets {
+    gap: 10px;
+  }
+  
+  .status-widget {
+    padding: 12px;
+  }
+  
+  /* Charts */
+  .charts-inner-container {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .permits-grid-container form div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .app-header {
+    margin: 8px;
+    padding: 12px;
+  }
+  
+  .brand-name {
+    font-size: 1rem;
+  }
+  
+  .brand-dept {
+    font-size: 0.7rem;
+  }
+  
+  .kpi-grid {
+    gap: 10px;
+  }
+  
+  .btn-block {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+  
+  .view-section {
+    padding: 0 6px 16px 6px;
+  }
+}

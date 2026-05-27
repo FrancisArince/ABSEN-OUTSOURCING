@@ -26,7 +26,8 @@ async function ensurePermitsTablePG() {
       doctor_letter_number VARCHAR(100),
       status VARCHAR(20) DEFAULT 'pending',
       approved_by VARCHAR(100),
-      approved_at TIMESTAMP
+      approved_at TIMESTAMP,
+      leave_letter_number VARCHAR(100)
     );
   `);
   // Ensure all columns exist dynamically for pre-existing tables
@@ -35,6 +36,7 @@ async function ensurePermitsTablePG() {
   try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT \'pending\';'); } catch(e){}
   try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS approved_by VARCHAR(100);'); } catch(e){}
   try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP;'); } catch(e){}
+  try { await db.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS leave_letter_number VARCHAR(100);'); } catch(e){}
 }
 
 module.exports = async (req, res) => {
@@ -60,6 +62,7 @@ module.exports = async (req, res) => {
             TO_CHAR(permits.end_date, 'YYYY-MM-DD') AS end_date,
             permits.permit_type, permits.reason, permits.doctor_letter_number,
             permits.status, permits.approved_by, permits.approved_at,
+            permits.leave_letter_number,
             users.name, users.position
           FROM permits
           JOIN users ON permits.user_id = users.id
@@ -74,6 +77,7 @@ module.exports = async (req, res) => {
               TO_CHAR(permits.end_date, 'YYYY-MM-DD') AS end_date,
               permits.permit_type, permits.reason, permits.doctor_letter_number,
               permits.status, permits.approved_by, permits.approved_at,
+              permits.leave_letter_number,
               users.name, users.position
             FROM permits
             JOIN users ON permits.user_id = users.id
@@ -116,20 +120,21 @@ module.exports = async (req, res) => {
 
       if (action === 'update') {
         try {
+          const { leave_letter_number: lln } = body;
           await db.query(
             `UPDATE permits 
-             SET status = $1, approved_by = $2, approved_at = $3 
-             WHERE id = $4`,
-            [status, approved_by || null, approved_at || null, id]
+             SET status = $1, approved_by = $2, approved_at = $3, leave_letter_number = $4 
+             WHERE id = $5`,
+            [status, approved_by || null, approved_at || null, lln || null, id]
           );
         } catch (err) {
           if (err.code === '42P01' || err.message.includes('relation "permits" does not exist')) {
             await ensurePermitsTablePG();
             await db.query(
               `UPDATE permits 
-               SET status = $1, approved_by = $2, approved_at = $3 
-               WHERE id = $4`,
-              [status, approved_by || null, approved_at || null, id]
+               SET status = $1, approved_by = $2, approved_at = $3, leave_letter_number = $4 
+               WHERE id = $5`,
+              [status, approved_by || null, approved_at || null, body.leave_letter_number || null, id]
             );
           } else {
             throw err;

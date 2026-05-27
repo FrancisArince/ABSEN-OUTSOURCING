@@ -515,6 +515,25 @@ class AppDatabase {
 
 const db = new AppDatabase();
 
+// --- LOGO PRELOADER FOR PDF ---
+let LOGO_BASE64 = null;
+(function preloadLogo() {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    LOGO_BASE64 = canvas.toDataURL('image/png');
+  };
+  img.onerror = function() {
+    console.warn('Logo Murung Raya gagal dimuat untuk PDF.');
+  };
+  img.src = 'logo_murungraya.png';
+})();
+
 // --- 2. APPLICATION STATE ---
 const state = {
   currentUser: null,
@@ -3659,6 +3678,28 @@ function setupEventListeners() {
         return;
       }
       
+      // Validation 3: Kuota Cuti Tahunan maksimal 12 hari kerja
+      if (type === 'cuti') {
+        const currentYear = new Date().getFullYear();
+        const usedLeaveDays = db.permits
+          .filter(p => p.user_id === state.currentUser.id && p.permit_type === 'cuti' && p.status !== 'rejected')
+          .reduce((total, p) => {
+            const pYear = new Date(p.start_date).getFullYear();
+            if (pYear === currentYear) {
+              const s = new Date(p.start_date);
+              const e = new Date(p.end_date);
+              return total + Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+            }
+            return total;
+          }, 0);
+        
+        if (usedLeaveDays + days > 12) {
+          const remaining = Math.max(0, 12 - usedLeaveDays);
+          showToast("Kuota Cuti Habis", `Sisa kuota cuti tahunan Anda: ${remaining} hari. Anda mengajukan ${days} hari yang melebihi batas 12 hari/tahun.`, "error");
+          return;
+        }
+      }
+      
       const newPermit = {
         id: 'pm-' + Date.now(),
         user_id: state.currentUser.id,
@@ -3669,7 +3710,8 @@ function setupEventListeners() {
         doctor_letter_number: docLetter || null,
         status: 'pending',
         approved_by: null,
-        approved_at: null
+        approved_at: null,
+        leave_letter_number: null
       };
       
       db.permits.push(newPermit);
@@ -3806,9 +3848,20 @@ function renderAdminPermits() {
 }
 
 window.approvePermit = function(id) {
-  if (!confirm('Apakah Anda yakin ingin menyetujui pengajuan ini?')) return;
   const permit = db.permits.find(p => p.id === id);
   if (!permit) return;
+  
+  // For cuti, require leave letter number
+  if (permit.permit_type === 'cuti') {
+    const letterNumber = prompt('Masukkan Nomor Surat Cuti (wajib diisi):\n\nContoh: 800/123/Disdukcapil/2026');
+    if (!letterNumber || !letterNumber.trim()) {
+      showToast("Nomor Surat Wajib", "Nomor surat cuti wajib diisi untuk menyetujui pengajuan cuti.", "error");
+      return;
+    }
+    permit.leave_letter_number = letterNumber.trim();
+  } else {
+    if (!confirm('Apakah Anda yakin ingin menyetujui pengajuan ini?')) return;
+  }
   
   permit.status = 'approved';
   permit.approved_by = state.currentUser ? state.currentUser.name : 'System';
@@ -3897,7 +3950,7 @@ window.downloadLeavePDF = function(permitId) {
   
   const startStr = formatIndoDate(permit.start_date);
   const endStr = formatIndoDate(permit.end_date);
-  const approvedDateStr = formatIndoDate(permit.approved_at.split('T')[0]);
+  const approvedDateStr = permit.approved_at ? formatIndoDate(permit.approved_at.split('T')[0]) : formatIndoDate(new Date().toISOString().split('T')[0]);
   
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
@@ -3906,85 +3959,204 @@ window.downloadLeavePDF = function(permitId) {
     format: 'a4'
   });
   
-  // Design official Kop Surat (Header)
+  // --- KOP SURAT with Logo ---
+  const headerCenterX = 115;
+  
+  // Add logo if available
+  if (LOGO_BASE64) {
+    try {
+      doc.addImage(LOGO_BASE64, 'PNG', 22, 10, 22, 25);
+    } catch (e) {
+      console.warn('Failed to add logo to PDF:', e);
+    }
+  }
+  
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("PEMERINTAH KABUPATEN MURUNG RAYA", 105, 20, { align: "center" });
-  doc.setFontSize(14);
-  doc.text("DINAS KEPENDUDUKAN DAN PENCATATAN SIPIL", 105, 26, { align: "center" });
+  doc.text("PEMERINTAH KABUPATEN MURUNG RAYA", headerCenterX, 16, { align: "center" });
+  doc.setFontSize(13);
+  doc.text("DINAS KEPENDUDUKAN DAN", headerCenterX, 22, { align: "center" });
+  doc.text("PENCATATAN SIPIL", headerCenterX, 27, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("Jl. Letjend Soeprapto No. 5 Puruk Cahu, Kode Pos 73911", 105, 31, { align: "center" });
+  doc.text("JL. Bina Praja No.     Puruk Cahu, Kode Pos 73911", headerCenterX, 33, { align: "center" });
   
   // Double line separator
-  doc.setLineWidth(0.6);
-  doc.line(20, 35, 190, 35);
-  doc.setLineWidth(0.2);
-  doc.line(20, 36.5, 190, 36.5);
+  doc.setLineWidth(0.8);
+  doc.line(20, 37, 190, 37);
+  doc.setLineWidth(0.25);
+  doc.line(20, 38.5, 190, 38.5);
   
   // Title
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("SURAT IZIN CUTI TAHUNAN", 105, 46, { align: "center" });
+  doc.setFontSize(13);
+  doc.text("SURAT IZIN CUTI TAHUNAN", 105, 48, { align: "center" });
   
+  // Reference number from approval (leave_letter_number)
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  const refNo = `Nomor: 800/Cuti/${permit.id.substring(3, 8).toUpperCase()}/Disdukcapil/2026`;
-  doc.text(refNo, 105, 51, { align: "center" });
+  const refNo = permit.leave_letter_number 
+    ? 'Nomor: ' + permit.leave_letter_number
+    : 'Nomor: -';
+  doc.text(refNo, 105, 54, { align: "center" });
   
-  // Body text
-  let y = 62;
+  // Underline title
+  doc.setLineWidth(0.3);
+  doc.line(70, 55, 140, 55);
+  
+  // Body opening
+  let y = 66;
+  doc.setFontSize(10);
   doc.text("Diberikan izin cuti tahunan kepada Pegawai Outsourcing berikut:", 20, y);
   
-  y += 8;
+  // Employee details
+  y += 10;
   doc.setFont("helvetica", "bold");
   doc.text("Nama", 30, y);
-  doc.text(":", 70, y);
-  doc.text(empName, 75, y);
-  
-  y += 6;
-  doc.text("Jabatan/Posisi", 30, y);
-  doc.text(":", 70, y);
-  doc.text(empPos, 75, y);
-  
-  y += 6;
-  doc.text("Unit Kerja", 30, y);
-  doc.text(":", 70, y);
-  doc.text("Disdukcapil Kabupaten Murung Raya", 75, y);
-  
-  y += 10;
+  doc.text(":", 72, y);
   doc.setFont("helvetica", "normal");
-  const paragraph = `Selama ${days} hari kerja, terhitung mulai tanggal ${startStr} sampai dengan tanggal ${endStr}, dengan ketentuan setelah berakhirnya jangka waktu cuti tersebut wajib melaporkan diri kembali dan melaksanakan tugas sebagaimana mestinya.`;
+  doc.text(empName, 77, y);
+  
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Jabatan/Posisi", 30, y);
+  doc.text(":", 72, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(empPos, 77, y);
+  
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Unit Kerja", 30, y);
+  doc.text(":", 72, y);
+  doc.setFont("helvetica", "normal");
+  doc.text("Disdukcapil Kabupaten Murung Raya", 77, y);
+  
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Lama Cuti", 30, y);
+  doc.text(":", 72, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(days + ' (' + numberToWords(days) + ') hari kerja', 77, y);
+  
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Tanggal Cuti", 30, y);
+  doc.text(":", 72, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(startStr + ' s/d ' + endStr, 77, y);
+  
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Alasan", 30, y);
+  doc.text(":", 72, y);
+  doc.setFont("helvetica", "normal");
+  const reasonText = doc.splitTextToSize(permit.reason || '-', 100);
+  doc.text(reasonText, 77, y);
+  y += (reasonText.length - 1) * 5;
+  
+  // Body paragraph
+  y += 12;
+  doc.setFontSize(10);
+  const paragraph = 'Selama ' + days + ' (' + numberToWords(days) + ') hari kerja, terhitung mulai tanggal ' + startStr + ' sampai dengan tanggal ' + endStr + ', dengan ketentuan setelah berakhirnya jangka waktu cuti tersebut wajib melaporkan diri kembali dan melaksanakan tugas sebagaimana mestinya.';
   
   const text1 = doc.splitTextToSize(paragraph, 170);
   doc.text(text1, 20, y);
+  y += text1.length * 5 + 5;
   
-  y += 20;
-  const paragraph2 = `Demikian surat izin cuti ini dibuat untuk dapat dipergunakan sebagaimana mestinya.`;
+  const paragraph2 = 'Demikian surat izin cuti ini dibuat untuk dapat dipergunakan sebagaimana mestinya.';
   const text2 = doc.splitTextToSize(paragraph2, 170);
   doc.text(text2, 20, y);
   
-  // Signature block
-  y += 25;
-  doc.text("Puruk Cahu, " + approvedDateStr, 130, y);
+  // --- QR CODE (Real QR using qrcode-generator) ---
+  y += 20;
+  let qrImageData = null;
+  const qrContent = 'VERIFIED|ID:' + permit.id + '|NAMA:' + empName + '|CUTI:' + startStr + '-' + endStr + '|NO:' + (permit.leave_letter_number || '-') + '|APPROVED:' + permit.approved_by;
+  
+  try {
+    if (typeof qrcode !== 'undefined') {
+      const qr = qrcode(0, 'M');
+      qr.addData(qrContent);
+      qr.make();
+      
+      const cellSize = 2;
+      const moduleCount = qr.getModuleCount();
+      const canvasSize = moduleCount * cellSize;
+      
+      const qrCanvas = document.createElement('canvas');
+      qrCanvas.width = canvasSize;
+      qrCanvas.height = canvasSize;
+      const qrCtx = qrCanvas.getContext('2d');
+      
+      qrCtx.fillStyle = '#ffffff';
+      qrCtx.fillRect(0, 0, canvasSize, canvasSize);
+      qrCtx.fillStyle = '#000000';
+      
+      for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+          if (qr.isDark(row, col)) {
+            qrCtx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+      
+      qrImageData = qrCanvas.toDataURL('image/png');
+    }
+  } catch (e) {
+    console.warn('QR Code generation failed:', e);
+  }
+  
+  if (qrImageData) {
+    doc.addImage(qrImageData, 'PNG', 22, y - 5, 25, 25);
+  } else {
+    doc.setDrawColor(0);
+    doc.rect(22, y - 5, 25, 25);
+    doc.setFontSize(6);
+    doc.text("QR VERIFIED", 26, y + 8);
+    doc.text(permit.id, 23, y + 14);
+  }
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Scan untuk verifikasi", 23, y + 23);
+  doc.setTextColor(0, 0, 0);
+  
+  // --- SIGNATURE BLOCK (Kepala Dinas) ---
+  const sigX = 125;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("Puruk Cahu, " + approvedDateStr, sigX, y);
   y += 5;
   doc.setFont("helvetica", "bold");
-  doc.text("Disetujui Oleh:", 130, y);
-  y += 15;
-  doc.text(permit.approved_by, 130, y);
+  doc.setFontSize(9);
+  doc.text("Kepala Dinas Kependudukan dan", sigX, y);
+  doc.text("Pencatatan Sipil", sigX, y + 4);
+  doc.text("Kabupaten Murung Raya", sigX, y + 8);
+  
+  y += 28;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("____________________________", sigX, y);
+  y += 5;
   doc.setFont("helvetica", "normal");
-  doc.text("Pengawas / Administrator", 130, y + 4);
+  doc.setFontSize(8);
+  doc.text('Disetujui oleh: ' + (permit.approved_by || '-'), sigX, y);
   
-  // Add a nice QR code simulation or sign seal
-  doc.rect(20, y - 20, 22, 22);
-  doc.setFontSize(7);
-  doc.text("QR VERIFIED", 23, y - 10);
-  doc.setFontSize(5);
-  doc.text(permit.id, 21, y - 2);
-  
-  doc.save(`Surat_Cuti_${empName.replace(/\s+/g, '_')}_${permit.start_date}.pdf`);
+  doc.save('Surat_Cuti_' + empName.replace(/\s+/g, '_') + '_' + permit.start_date + '.pdf');
   showToast("Unduh PDF", "Surat Izin Cuti berhasil diunduh.", "success");
 };
 
+// Helper: Convert number to Indonesian words for leave letter
+function numberToWords(num) {
+  const satuan = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+  if (num <= 11) return satuan[num];
+  if (num <= 19) return satuan[num - 10] + ' belas';
+  if (num <= 99) {
+    const tens = Math.floor(num / 10);
+    const ones = num % 10;
+    return satuan[tens] + ' puluh' + (ones ? ' ' + satuan[ones] : '');
+  }
+  return String(num);
+}
+
 // Start core system
 document.addEventListener("DOMContentLoaded", initApp);
+
