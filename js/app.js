@@ -4128,46 +4128,57 @@ window.showVerificationPortal = function(verifyId) {
       detailContainer.style.borderColor = 'var(--success)';
       detailContainer.style.background = 'rgba(34,197,94,0.08)';
       detailContainer.innerHTML = `
-        <div style="display: flex; align-items: flex-start; gap: 16px;">
-          <div style="background: var(--success); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
-            <i class="fa-solid fa-circle-check"></i>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Header: Icon & Big status title -->
+          <div style="display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(34,197,94,0.15); padding-bottom: 16px;">
+            <div style="background: var(--success); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(34,197,94,0.4);">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <h3 style="color: var(--success); margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;">
+                Dokumen Terverifikasi & Asli
+              </h3>
+              <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-tertiary);">Status: Valid (Terdaftar di Database Disdukcapil)</p>
+            </div>
           </div>
-          <div style="flex-grow: 1;">
-            <h3 style="color: var(--success); margin: 0 0 8px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
-              Dokumen Terverifikasi & Asli
-            </h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; color: var(--text-secondary);">
-              <tr>
-                <td style="padding: 4px 0; font-weight: 600; width: 140px;">Nomor Dokumen</td>
-                <td style="padding: 4px 8px;">:</td>
-                <td style="padding: 4px 0; color: var(--text-primary); font-weight: 600;">${docNo}</td>
-              </tr>
-              <tr>
-                <td style="padding: 4px 0; font-weight: 600;">Jenis Dokumen</td>
-                <td style="padding: 4px 8px;">:</td>
-                <td style="padding: 4px 0; color: var(--text-primary);">${docType}</td>
-              </tr>
-              <tr>
-                <td style="padding: 4px 0; font-weight: 600;">Nama Pegawai</td>
-                <td style="padding: 4px 8px;">:</td>
-                <td style="padding: 4px 0; color: var(--text-primary);">${empName}</td>
-              </tr>
-              <tr>
-                <td style="padding: 4px 0; font-weight: 600;">Jabatan / Posisi</td>
-                <td style="padding: 4px 8px;">:</td>
-                <td style="padding: 4px 0; color: var(--text-primary);">${empPos}</td>
-              </tr>
-              <tr>
-                <td style="padding: 4px 0; font-weight: 600;">Tanggal Berlaku</td>
-                <td style="padding: 4px 8px;">:</td>
-                <td style="padding: 4px 0; color: var(--text-primary);">${startStr} s/d ${endStr}</td>
-              </tr>
-              <tr>
-                <td style="padding: 4px 0; font-weight: 600;">Verifikator</td>
-                <td style="padding: 4px 8px;">:</td>
-                <td style="padding: 4px 0; color: var(--text-primary); font-style: italic;">${permit.approved_by || 'Admin/Pengawas'}</td>
-              </tr>
-            </table>
+
+          <!-- Key Value Items List -->
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Nomor Dokumen -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Nomor Dokumen</span>
+              <span style="color: var(--text-primary); font-weight: 600; font-size: 1.05rem; word-break: break-all;">${docNo}</span>
+            </div>
+
+            <!-- Jenis Dokumen -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Jenis Dokumen</span>
+              <span style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">${docType}</span>
+            </div>
+
+            <!-- Nama Pegawai -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Nama Pegawai</span>
+              <span style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">${empName}</span>
+            </div>
+
+            <!-- Jabatan / Posisi -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Jabatan / Posisi</span>
+              <span style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">${empPos}</span>
+            </div>
+
+            <!-- Tanggal Berlaku -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Tanggal Berlaku</span>
+              <span style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">${startStr} s/d ${endStr}</span>
+            </div>
+
+            <!-- Verifikator -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Diverifikasi Oleh</span>
+              <span style="color: var(--accent); font-weight: 600; font-size: 1rem; font-style: italic;">${permit.approved_by || 'Admin/Pengawas'}</span>
+            </div>
           </div>
         </div>
       `;
@@ -4175,14 +4186,24 @@ window.showVerificationPortal = function(verifyId) {
       detailContainer.style.borderColor = 'var(--error)';
       detailContainer.style.background = 'rgba(239,68,68,0.08)';
       detailContainer.innerHTML = `
-        <div style="display: flex; align-items: flex-start; gap: 16px;">
-          <div style="background: var(--error); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
-            <i class="fa-solid fa-triangle-exclamation"></i>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Header: Icon & Big status title -->
+          <div style="display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(239,68,68,0.15); padding-bottom: 16px;">
+            <div style="background: var(--error); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(239,68,68,0.4);">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <h3 style="color: var(--error); margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;">
+                Dokumen Tidak Valid / Dihapus
+              </h3>
+              <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-tertiary);">Status: Invalid (Tidak Terdaftar)</p>
+            </div>
           </div>
-          <div>
-            <h3 style="color: var(--error); margin: 0 0 4px 0; font-size: 1.2rem;">Dokumen Tidak Valid / Dihapus</h3>
-            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
-              ID dokumen <strong>"${verifyId}"</strong> tidak terdaftar, telah dihapus, atau belum disetujui oleh otoritas Dinas Kependudukan dan Pencatatan Sipil Kab. Murung Raya.
+
+          <!-- Warning Details -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 14px; border-radius: var(--radius-sm);">
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+              Dokumen dengan ID <strong style="color: var(--error); word-break: break-all;">"${verifyId}"</strong> tidak valid, tidak terdaftar, atau sudah dihapus oleh Otoritas Dinas Kependudukan dan Pencatatan Sipil Kabupaten Murung Raya.
             </p>
           </div>
         </div>

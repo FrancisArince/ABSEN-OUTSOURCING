@@ -32,6 +32,35 @@
   
   <!-- QR Code Generator for Leave Letter PDF -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <!-- Instant QR Verification routing to prevent login screen flash -->
+  <script>
+    if (window.location.search.includes('verify=')) {
+      document.write('<style>#view-login { display: none !important; } #view-verifikasi { display: block !important; }</style>');
+      document.addEventListener('DOMContentLoaded', () => {
+        const loginView = document.getElementById('view-login');
+        const verifyView = document.getElementById('view-verifikasi');
+        if (loginView && verifyView) {
+          loginView.classList.add('hidden');
+          loginView.classList.remove('active');
+          verifyView.classList.remove('hidden');
+          verifyView.classList.add('active');
+          const detail = document.getElementById('verification-detail-container');
+          if (detail) {
+            detail.classList.remove('hidden');
+            detail.style.borderColor = 'var(--accent)';
+            detail.style.background = 'rgba(147, 51, 234, 0.05)';
+            detail.innerHTML = `
+              <div style="text-align: center; padding: 30px; color: var(--text-secondary);">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent); margin-bottom: 12px; display: block;"></i>
+                Mengecek Keaslian Dokumen...
+              </div>
+            `;
+          }
+        }
+      });
+    }
+  </script>
 </head>
 <body class="dark-theme">
   <!-- Glowing Decorative Background Elements -->
