@@ -753,7 +753,16 @@ const DOM = {
   // Add Employee Shift
   addEmpShift: document.getElementById("add-emp-shift"),
   
-  btnExportJournalPdf: document.getElementById("btn-export-journal-pdf")
+  btnExportJournalPdf: document.getElementById("btn-export-journal-pdf"),
+  
+  // Verification Portal
+  viewVerifikasi: document.getElementById("view-verifikasi"),
+  btnGotoVerification: document.getElementById("btn-goto-verification"),
+  btnBackToLogin: document.getElementById("btn-back-to-login"),
+  verificationDetailContainer: document.getElementById("verification-detail-container"),
+  verificationListContainer: document.getElementById("verification-list-container"),
+  verifySearchInput: document.getElementById("verify-search-input"),
+  verifyTableBody: document.getElementById("verify-table-body")
 };
 
 // --- 4. SYSTEM INITIALIZATION & HELPER CLOCK ---
@@ -782,6 +791,13 @@ async function initApp() {
   
   // Populate dropdowns once data is loaded
   populateRekapJurnalKaryawanDropdown();
+  
+  // Auto-routing for QR Code Verification Link
+  const urlParams = new URLSearchParams(window.location.search);
+  const verifyId = urlParams.get('verify');
+  if (verifyId) {
+    window.showVerificationPortal(verifyId);
+  }
 }
 
 function startDigitalClock() {
@@ -3806,6 +3822,17 @@ function setupEventListeners() {
       showToast("Pengajuan Dikirim", "Pengajuan izin/cuti berhasil dikirim dan menunggu persetujuan.", "success");
     });
   }
+  
+  // Verification Portal Events
+  if (DOM.btnGotoVerification) {
+    DOM.btnGotoVerification.addEventListener('click', () => window.showVerificationPortal());
+  }
+  if (DOM.btnBackToLogin) {
+    DOM.btnBackToLogin.addEventListener('click', () => window.hideVerificationPortal());
+  }
+  if (DOM.verifySearchInput) {
+    DOM.verifySearchInput.addEventListener('input', () => window.renderVerificationList());
+  }
 }
 
 // Global functions for Permits
@@ -4071,6 +4098,205 @@ window.deletePermit = async function(id) {
   showToast("Pengajuan Dihapus", `Pengajuan ${permit.permit_type.replace(/_/g, ' ')} berhasil dihapus.`, "info");
 };
 
+window.showVerificationPortal = function(verifyId) {
+  // Hide login view, show verification view
+  if (DOM.viewLogin) {
+    DOM.viewLogin.classList.remove('active');
+    DOM.viewLogin.classList.add('hidden');
+  }
+  if (DOM.viewKaryawan) {
+    DOM.viewKaryawan.classList.remove('active');
+    DOM.viewKaryawan.classList.add('hidden');
+  }
+  if (DOM.viewAdmin) {
+    DOM.viewAdmin.classList.remove('active');
+    DOM.viewAdmin.classList.add('hidden');
+  }
+  if (DOM.viewVerifikasi) {
+    DOM.viewVerifikasi.classList.remove('hidden');
+    DOM.viewVerifikasi.classList.add('active');
+  }
+
+  const detailContainer = DOM.verificationDetailContainer;
+  if (!detailContainer) return;
+
+  if (verifyId) {
+    // Look up permit
+    const permit = db.permits.find(p => p.id === verifyId);
+    detailContainer.classList.remove('hidden');
+    
+    if (permit && permit.status === 'approved') {
+      const emp = db.users.find(u => u.id === permit.user_id);
+      const empName = emp ? emp.name : 'N/A';
+      const empPos = emp ? emp.position : 'N/A';
+      const docType = permit.permit_type === 'mengantar_kepala_dinas' ? 'Surat Jalan (Mengantar Kepala Dinas)' : 'Surat Izin Cuti';
+      const docNo = permit.leave_letter_number || '-';
+      const startStr = formatIndoDate(permit.start_date);
+      const endStr = formatIndoDate(permit.end_date);
+      
+      detailContainer.style.borderColor = 'var(--success)';
+      detailContainer.style.background = 'rgba(34,197,94,0.08)';
+      detailContainer.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="background: var(--success); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div style="flex-grow: 1;">
+            <h3 style="color: var(--success); margin: 0 0 8px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+              Dokumen Terverifikasi & Asli
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; color: var(--text-secondary);">
+              <tr>
+                <td style="padding: 4px 0; font-weight: 600; width: 140px;">Nomor Dokumen</td>
+                <td style="padding: 4px 8px;">:</td>
+                <td style="padding: 4px 0; color: var(--text-primary); font-weight: 600;">${docNo}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-weight: 600;">Jenis Dokumen</td>
+                <td style="padding: 4px 8px;">:</td>
+                <td style="padding: 4px 0; color: var(--text-primary);">${docType}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-weight: 600;">Nama Pegawai</td>
+                <td style="padding: 4px 8px;">:</td>
+                <td style="padding: 4px 0; color: var(--text-primary);">${empName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-weight: 600;">Jabatan / Posisi</td>
+                <td style="padding: 4px 8px;">:</td>
+                <td style="padding: 4px 0; color: var(--text-primary);">${empPos}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-weight: 600;">Tanggal Berlaku</td>
+                <td style="padding: 4px 8px;">:</td>
+                <td style="padding: 4px 0; color: var(--text-primary);">${startStr} s/d ${endStr}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-weight: 600;">Verifikator</td>
+                <td style="padding: 4px 8px;">:</td>
+                <td style="padding: 4px 0; color: var(--text-primary); font-style: italic;">${permit.approved_by || 'Admin/Pengawas'}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      `;
+    } else {
+      detailContainer.style.borderColor = 'var(--error)';
+      detailContainer.style.background = 'rgba(239,68,68,0.08)';
+      detailContainer.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="background: var(--error); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <h3 style="color: var(--error); margin: 0 0 4px 0; font-size: 1.2rem;">Dokumen Tidak Valid</h3>
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+              ID dokumen <strong>"${verifyId}"</strong> tidak terdaftar atau belum disetujui oleh otoritas Dinas Kependudukan dan Pencatatan Sipil Kab. Murung Raya.
+            </p>
+          </div>
+        </div>
+      `;
+    }
+  } else {
+    detailContainer.classList.add('hidden');
+    detailContainer.innerHTML = '';
+  }
+
+  // Render list of verified documents
+  window.renderVerificationList();
+};
+
+window.hideVerificationPortal = function() {
+  if (DOM.viewVerifikasi) {
+    DOM.viewVerifikasi.classList.remove('active');
+    DOM.viewVerifikasi.classList.add('hidden');
+  }
+  if (DOM.viewLogin) {
+    DOM.viewLogin.classList.remove('hidden');
+    DOM.viewLogin.classList.add('active');
+  }
+  
+  // Clear verify query param from URL without reloading page
+  const url = new URL(window.location);
+  url.searchParams.delete('verify');
+  window.history.replaceState({}, '', url);
+};
+
+window.renderVerificationList = function() {
+  const tbody = DOM.verifyTableBody;
+  if (!tbody) return;
+
+  const searchQuery = DOM.verifySearchInput ? DOM.verifySearchInput.value.toLowerCase().trim() : '';
+  
+  // Filter for approved permits
+  const approvedPermits = db.permits.filter(p => p.status === 'approved');
+  
+  tbody.innerHTML = '';
+  
+  let matchCount = 0;
+  approvedPermits.forEach(p => {
+    const emp = db.users.find(u => u.id === p.user_id);
+    const empName = emp ? emp.name : 'N/A';
+    const empPos = emp ? emp.position : 'N/A';
+    const docType = p.permit_type === 'mengantar_kepala_dinas' ? 'Surat Jalan' : 'Surat Cuti';
+    const docNo = p.leave_letter_number || '-';
+    const startStr = formatIndoDate(p.start_date);
+    const endStr = formatIndoDate(p.end_date);
+    const rangeStr = `${startStr} s/d ${endStr}`;
+    
+    // Search match
+    const isMatch = empName.toLowerCase().includes(searchQuery) ||
+                    docNo.toLowerCase().includes(searchQuery) ||
+                    docType.toLowerCase().includes(searchQuery) ||
+                    empPos.toLowerCase().includes(searchQuery);
+                    
+    if (!isMatch) return;
+    
+    matchCount++;
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.onclick = () => {
+      // Set parameter verify in URL and show portal
+      const url = new URL(window.location);
+      url.searchParams.set('verify', p.id);
+      window.history.replaceState({}, '', url);
+      window.showVerificationPortal(p.id);
+      if (DOM.verificationDetailContainer) {
+        DOM.verificationDetailContainer.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    
+    tr.innerHTML = `
+      <td><span style="font-weight: 600; color: var(--accent);">${docNo}</span></td>
+      <td>${empName}</td>
+      <td>${empPos}</td>
+      <td>
+        <span class="status-tag ${p.permit_type === 'mengantar_kepala_dinas' ? 'dinas' : 'cuti'}" style="padding: 2px 6px; font-size: 0.75rem; text-transform: uppercase;">
+          ${docType}
+        </span>
+      </td>
+      <td>${rangeStr}</td>
+      <td>
+        <span class="status-tag hadir" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;">
+          <i class="fa-solid fa-shield-check"></i> Asli
+        </span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (matchCount === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 20px;">
+          <i class="fa-regular fa-folder-open" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+          Tidak ada dokumen terverifikasi yang cocok dengan kata kunci.
+        </td>
+      </tr>
+    `;
+  }
+};
+
 window.downloadLeavePDF = function(permitId) {
   const permit = db.permits.find(p => p.id === permitId);
   if (!permit) {
@@ -4273,7 +4499,7 @@ window.downloadLeavePDF = function(permitId) {
   // --- QR CODE (Real QR using qrcode-generator) ---
   y += 20;
   let qrImageData = null;
-  const qrContent = 'VERIFIED|ID:' + permit.id + '|NAMA:' + empName + '|CUTI:' + startStr + '-' + endStr + '|NO:' + (permit.leave_letter_number || '-') + '|APPROVED:' + permit.approved_by;
+  const qrContent = window.location.href.split('?')[0] + '?verify=' + permit.id;
   
   try {
     if (typeof qrcode !== 'undefined') {
@@ -4526,15 +4752,6 @@ window.downloadTravelPDF = function(permitId) {
   doc.setFont("helvetica", "normal");
   doc.text(startStr + ' s/d ' + endStr, 77, y);
   
-  y += 7;
-  doc.setFont("helvetica", "bold");
-  doc.text("Detail Rute / Alasan", 30, y);
-  doc.text(":", 72, y);
-  doc.setFont("helvetica", "normal");
-  const reasonText = doc.splitTextToSize(permit.reason || '-', 100);
-  doc.text(reasonText, 77, y);
-  y += (reasonText.length - 1) * 5;
-  
   // Body paragraph
   y += 12;
   doc.setFontSize(10);
@@ -4545,7 +4762,7 @@ window.downloadTravelPDF = function(permitId) {
   // --- QR CODE (Real QR using qrcode-generator) ---
   y += 20;
   let qrImageData = null;
-  const qrContent = 'VERIFIED_SPJ|ID:' + permit.id + '|NAMA:' + empName + '|TUGAS:Mengantar_Kepala_Dinas|NO:' + (permit.leave_letter_number || '-') + '|APPROVED:' + permit.approved_by;
+  const qrContent = window.location.href.split('?')[0] + '?verify=' + permit.id;
   
   try {
     if (typeof qrcode !== 'undefined') {
