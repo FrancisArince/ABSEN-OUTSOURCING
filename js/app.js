@@ -757,12 +757,8 @@ const DOM = {
   
   // Verification Portal
   viewVerifikasi: document.getElementById("view-verifikasi"),
-  btnGotoVerification: document.getElementById("btn-goto-verification"),
   btnBackToLogin: document.getElementById("btn-back-to-login"),
-  verificationDetailContainer: document.getElementById("verification-detail-container"),
-  verificationListContainer: document.getElementById("verification-list-container"),
-  verifySearchInput: document.getElementById("verify-search-input"),
-  verifyTableBody: document.getElementById("verify-table-body")
+  verificationDetailContainer: document.getElementById("verification-detail-container")
 };
 
 // --- 4. SYSTEM INITIALIZATION & HELPER CLOCK ---
@@ -3824,14 +3820,8 @@ function setupEventListeners() {
   }
   
   // Verification Portal Events
-  if (DOM.btnGotoVerification) {
-    DOM.btnGotoVerification.addEventListener('click', () => window.showVerificationPortal());
-  }
   if (DOM.btnBackToLogin) {
     DOM.btnBackToLogin.addEventListener('click', () => window.hideVerificationPortal());
-  }
-  if (DOM.verifySearchInput) {
-    DOM.verifySearchInput.addEventListener('input', () => window.renderVerificationList());
   }
 }
 
@@ -4120,10 +4110,11 @@ window.showVerificationPortal = function(verifyId) {
   const detailContainer = DOM.verificationDetailContainer;
   if (!detailContainer) return;
 
+  detailContainer.classList.remove('hidden');
+
   if (verifyId) {
     // Look up permit
     const permit = db.permits.find(p => p.id === verifyId);
-    detailContainer.classList.remove('hidden');
     
     if (permit && permit.status === 'approved') {
       const emp = db.users.find(u => u.id === permit.user_id);
@@ -4189,21 +4180,31 @@ window.showVerificationPortal = function(verifyId) {
             <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
           <div>
-            <h3 style="color: var(--error); margin: 0 0 4px 0; font-size: 1.2rem;">Dokumen Tidak Valid</h3>
+            <h3 style="color: var(--error); margin: 0 0 4px 0; font-size: 1.2rem;">Dokumen Tidak Valid / Dihapus</h3>
             <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
-              ID dokumen <strong>"${verifyId}"</strong> tidak terdaftar atau belum disetujui oleh otoritas Dinas Kependudukan dan Pencatatan Sipil Kab. Murung Raya.
+              ID dokumen <strong>"${verifyId}"</strong> tidak terdaftar, telah dihapus, atau belum disetujui oleh otoritas Dinas Kependudukan dan Pencatatan Sipil Kab. Murung Raya.
             </p>
           </div>
         </div>
       `;
     }
   } else {
-    detailContainer.classList.add('hidden');
-    detailContainer.innerHTML = '';
+    detailContainer.style.borderColor = 'var(--accent)';
+    detailContainer.style.background = 'rgba(147, 51, 234, 0.05)';
+    detailContainer.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 16px;">
+        <div style="background: var(--accent); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          <i class="fa-solid fa-qrcode"></i>
+        </div>
+        <div>
+          <h3 style="color: var(--accent); margin: 0 0 4px 0; font-size: 1.2rem;">Silakan Scan QR Code</h3>
+          <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+            Silakan scan QR Code yang tertera pada berkas cetak Surat Cuti atau Surat Jalan resmi untuk melihat data verifikasi keaslian dokumen secara langsung di sini.
+          </p>
+        </div>
+      </div>
+    `;
   }
-
-  // Render list of verified documents
-  window.renderVerificationList();
 };
 
 window.hideVerificationPortal = function() {
@@ -4220,81 +4221,6 @@ window.hideVerificationPortal = function() {
   const url = new URL(window.location);
   url.searchParams.delete('verify');
   window.history.replaceState({}, '', url);
-};
-
-window.renderVerificationList = function() {
-  const tbody = DOM.verifyTableBody;
-  if (!tbody) return;
-
-  const searchQuery = DOM.verifySearchInput ? DOM.verifySearchInput.value.toLowerCase().trim() : '';
-  
-  // Filter for approved permits
-  const approvedPermits = db.permits.filter(p => p.status === 'approved');
-  
-  tbody.innerHTML = '';
-  
-  let matchCount = 0;
-  approvedPermits.forEach(p => {
-    const emp = db.users.find(u => u.id === p.user_id);
-    const empName = emp ? emp.name : 'N/A';
-    const empPos = emp ? emp.position : 'N/A';
-    const docType = p.permit_type === 'mengantar_kepala_dinas' ? 'Surat Jalan' : 'Surat Cuti';
-    const docNo = p.leave_letter_number || '-';
-    const startStr = formatIndoDate(p.start_date);
-    const endStr = formatIndoDate(p.end_date);
-    const rangeStr = `${startStr} s/d ${endStr}`;
-    
-    // Search match
-    const isMatch = empName.toLowerCase().includes(searchQuery) ||
-                    docNo.toLowerCase().includes(searchQuery) ||
-                    docType.toLowerCase().includes(searchQuery) ||
-                    empPos.toLowerCase().includes(searchQuery);
-                    
-    if (!isMatch) return;
-    
-    matchCount++;
-    const tr = document.createElement('tr');
-    tr.style.cursor = 'pointer';
-    tr.onclick = () => {
-      // Set parameter verify in URL and show portal
-      const url = new URL(window.location);
-      url.searchParams.set('verify', p.id);
-      window.history.replaceState({}, '', url);
-      window.showVerificationPortal(p.id);
-      if (DOM.verificationDetailContainer) {
-        DOM.verificationDetailContainer.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
-    
-    tr.innerHTML = `
-      <td><span style="font-weight: 600; color: var(--accent);">${docNo}</span></td>
-      <td>${empName}</td>
-      <td>${empPos}</td>
-      <td>
-        <span class="status-tag ${p.permit_type === 'mengantar_kepala_dinas' ? 'dinas' : 'cuti'}" style="padding: 2px 6px; font-size: 0.75rem; text-transform: uppercase;">
-          ${docType}
-        </span>
-      </td>
-      <td>${rangeStr}</td>
-      <td>
-        <span class="status-tag hadir" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;">
-          <i class="fa-solid fa-shield-check"></i> Asli
-        </span>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-  
-  if (matchCount === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 20px;">
-          <i class="fa-regular fa-folder-open" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
-          Tidak ada dokumen terverifikasi yang cocok dengan kata kunci.
-        </td>
-      </tr>
-    `;
-  }
 };
 
 window.downloadLeavePDF = function(permitId) {
