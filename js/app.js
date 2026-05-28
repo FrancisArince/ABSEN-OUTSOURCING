@@ -2954,8 +2954,8 @@ window.exportRekapBulanan = function() {
       cellStyle.fillColor = [220, 220, 220];
       cellStyle.textColor = [50, 50, 50]; // Dark gray text for light gray background
     } else {
-      cellStyle.fillColor = [6, 182, 212];
-      cellStyle.textColor = [255, 255, 255]; // White text for cyan background
+      cellStyle.fillColor = [64, 64, 64];
+      cellStyle.textColor = [255, 255, 255]; // White text for dark gray background
     }
 
     dayHeaders.push({
@@ -2989,7 +2989,8 @@ window.exportRekapBulanan = function() {
 
       if (att) {
         if (att.status === 'Izin' || att.status === 'Sakit' || att.status === 'Cuti' || att.status === 'Mengantar Kepala Dinas') {
-          const statusText = att.status === 'Mengantar Kepala Dinas' ? 'DINAS' : att.status.toUpperCase();
+          const isDinas = att.status === 'Mengantar Kepala Dinas';
+          const statusText = isDinas ? 'DINAS' : att.status.toUpperCase();
           let textColor = att.status === 'Izin' ? [6, 182, 212] : 
                           (att.status === 'Sakit' ? [239, 68, 68] : 
                           (att.status === 'Cuti' ? [139, 92, 246] : [245, 158, 11]));
@@ -2997,10 +2998,10 @@ window.exportRekapBulanan = function() {
             content: statusText,
             styles: {
               halign: 'center',
-              fontSize: 6,
+              fontSize: isDinas ? 4.2 : 6,
               textColor: textColor,
               fillColor: isWeekendOrHoliday ? [240, 240, 240] : null,
-              cellPadding: 1
+              cellPadding: isDinas ? 0.5 : 1
             }
           });
         } else if (att.check_in_time) {
@@ -3055,7 +3056,7 @@ window.exportRekapBulanan = function() {
     body: tableBody,
     startY: 32,
     theme: 'grid',
-    headStyles: { fillColor: [6, 182, 212], textColor: [255, 255, 255], fontSize: 7, halign: 'center', valign: 'middle' },
+    headStyles: { fillColor: [64, 64, 64], textColor: [255, 255, 255], fontSize: 7, halign: 'center', valign: 'middle' },
     styles: { font: 'helvetica', fontSize: 6.5, cellPadding: 1.5, valign: 'middle', lineColor: [180, 180, 180] },
     columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 38, halign: 'left' } },
     margin: { left: 8, right: 8 }
@@ -3084,7 +3085,15 @@ window.exportRekapBulanan = function() {
   doc.text("KABUPATEN MURUNG RAYA", 15, currentY + 12);
   
   // Right side headers
-  doc.text(`Puruk Cahu,   ${selectedBulanText} ${selectedTahunStr}`, 210, currentY);
+  const today = new Date();
+  const printDay = today.getDate();
+  const monthNames = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+  const printMonth = monthNames[today.getMonth()];
+  const printYear = today.getFullYear();
+  doc.text(`Puruk Cahu, ${printDay} ${printMonth} ${printYear}`, 210, currentY);
   doc.text("KASUBBAG UMUM DAN KEPEGAWAIAN", 210, currentY + 4);
   
   // Names (Bold)
