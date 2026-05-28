@@ -2253,6 +2253,14 @@ img, video, canvas {
   border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
+.status-tag.dinas,
+.status-tag.mengantar-kepala-dinas,
+.status-tag.mengantar_kepala_dinas {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
 .permits-grid-container {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
