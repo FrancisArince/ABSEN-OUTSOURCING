@@ -243,6 +243,29 @@ class AppDatabase {
     } catch (err) {
       console.error("Failed to sync settings:", err);
     }
+
+    // 7. Self-heal: Clean up orphaned permit attendance records
+    let hasOrphans = false;
+    this.attendances = this.attendances.filter(a => {
+      if (['Izin', 'Sakit', 'Cuti', 'Mengantar Kepala Dinas'].includes(a.status)) {
+        const hasApprovedPermit = this.permits.some(p => 
+          p.user_id === a.user_id && 
+          p.status === 'approved' && 
+          a.date >= p.start_date && 
+          a.date <= p.end_date
+        );
+        if (!hasApprovedPermit) {
+          console.warn(`Self-heal: Removing orphaned attendance log ${a.id} (status: ${a.status}, date: ${a.date})`);
+          hasOrphans = true;
+          return false;
+        }
+      }
+      return true;
+    });
+    
+    if (hasOrphans) {
+      await this.save();
+    }
   }
 
   async save() {
