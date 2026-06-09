@@ -1754,7 +1754,7 @@ async function handleAttendanceCheck(type) {
       if (matchPercent > 100) matchPercent = 100;
       if (matchPercent < 0) matchPercent = 0;
       
-      if (matchPercent < 55) {
+      if (matchPercent < 40) {
           showToast("Wajah Tidak Dikenali", `Akses ditolak! Tingkat kecocokan hanya ${matchPercent.toFixed(1)}%. Wajah berbeda dengan data profil.`, "error");
           return;
       }
