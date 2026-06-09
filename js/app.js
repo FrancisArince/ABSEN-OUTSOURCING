@@ -667,6 +667,8 @@ const DOM = {
   kpiPresentRate: document.getElementById("kpi-present-rate"),
   kpiLateCount: document.getElementById("kpi-late-count"),
   kpiLateRate: document.getElementById("kpi-late-rate"),
+  kpiEarlyLeaveCount: document.getElementById("kpi-early-leave-count"),
+  kpiEarlyLeaveRate: document.getElementById("kpi-early-leave-rate"),
   kpiOutRadiusCount: document.getElementById("kpi-out-radius-count"),
   kpiOutRadiusRate: document.getElementById("kpi-out-radius-rate"),
   btnAdminRefresh: document.getElementById("btn-admin-refresh"),
@@ -2044,6 +2046,14 @@ function renderAdminDashboardKPIs() {
   DOM.kpiLateCount.textContent = lateCount;
   const lateRate = filteredLogs.length > 0 ? Math.round((lateCount / filteredLogs.length) * 100) : 0;
   DOM.kpiLateRate.textContent = `${lateRate}% Dari yang hadir`;
+
+  // Early leave counts
+  const earlyCount = filteredLogs.filter(l => l.status === 'Pulang Lebih Awal').length;
+  if (DOM.kpiEarlyLeaveCount) {
+    DOM.kpiEarlyLeaveCount.textContent = earlyCount;
+    const earlyRate = filteredLogs.length > 0 ? Math.round((earlyCount / filteredLogs.length) * 100) : 0;
+    DOM.kpiEarlyLeaveRate.textContent = `${earlyRate}% Dari yang hadir`;
+  }
   
   // Out of radius breach count
   const outRadiusCount = filteredLogs.filter(l => l.status === 'Luar Radius').length;
@@ -2080,6 +2090,7 @@ function renderAdminRekapJabatan() {
     
     let totalHadir = 0;
     let totalTelat = 0;
+    let totalPulangAwal = 0;
     let totalLuarRadius = 0;
     
     empsInRole.forEach(emp => {
@@ -2089,6 +2100,7 @@ function renderAdminRekapJabatan() {
       empLogs.forEach(log => {
         if (log.status === 'Hadir') totalHadir++;
         if (log.status === 'Terlambat') totalTelat++;
+        if (log.status === 'Pulang Lebih Awal') totalPulangAwal++;
         if (log.status === 'Luar Radius' || log.status === 'Gagal Verifikasi') totalLuarRadius++;
       });
     });
@@ -2097,7 +2109,7 @@ function renderAdminRekapJabatan() {
     const dateFilter = DOM.adminTableFilterDate ? DOM.adminTableFilterDate.value : 'today';
     let belumAbsenCount = 0;
     if (dateFilter === 'today') {
-       belumAbsenCount = empsInRole.length - (totalHadir + totalTelat + totalLuarRadius);
+       belumAbsenCount = empsInRole.length - (totalHadir + totalTelat + totalPulangAwal + totalLuarRadius);
        if (belumAbsenCount < 0) belumAbsenCount = 0;
     } else {
        belumAbsenCount = "-"; // Not applicable for multi-day ranges
@@ -2109,6 +2121,7 @@ function renderAdminRekapJabatan() {
       <td><div class="user-avatar" style="display:inline-block; width:24px; height:24px; border-radius:50%; background:var(--glass-bg); text-align:center; line-height:24px; margin-right:8px;"><i class="fa-solid fa-users"></i></div>${empsInRole.length} Orang</td>
       <td style="color: var(--success); font-weight: 600;">${totalHadir}</td>
       <td style="color: var(--warning); font-weight: 600;">${totalTelat}</td>
+      <td style="color: var(--warning); font-weight: 600;">${totalPulangAwal}</td>
       <td style="color: var(--error); font-weight: 600;">${totalLuarRadius}</td>
       <td style="color: var(--text-tertiary);">${belumAbsenCount}</td>
     `;
