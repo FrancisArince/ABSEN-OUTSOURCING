@@ -1,0 +1,2562 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentasi Smart Absensi - Disdukcapil Kab. Murung Raya</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ========================================================================
+       AURORA DARK PRESENTATION DESIGN SYSTEM
+       ======================================================================== */
+    :root {
+      --bg-primary: #07070a;
+      --bg-secondary: #0c0c10;
+      --bg-tertiary: #121217;
+      
+      --glass-bg: rgba(15, 15, 22, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.06);
+      --glass-border-hover: rgba(255, 255, 255, 0.12);
+      --glass-shadow: rgba(0, 0, 0, 0.5);
+      
+      --primary: #06b6d4;          /* Cyber Cyan */
+      --primary-glow: rgba(6, 182, 212, 0.35);
+      --primary-hover: #22d3ee;
+      
+      --accent: #6366f1;           /* Neon Violet */
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --accent-hover: #818cf8;
+      
+      --success: #10b981;          /* Emerald Green */
+      --success-glow: rgba(16, 185, 129, 0.25);
+      
+      --warning: #f59e0b;          /* Amber Glow */
+      --warning-glow: rgba(245, 158, 11, 0.25);
+      
+      --error: #ef4444;            /* Crimson Cyber */
+      --error-glow: rgba(239, 68, 68, 0.25);
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      
+      --font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+      
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      
+      --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-fast: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Reset & Base Setup */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow: hidden; /* Lock scroll, presentation uses slider */
+      user-select: none;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    /* Aurora Glow Elements */
+    .aurora-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      overflow: hidden;
+      background-color: var(--bg-primary);
+      pointer-events: none;
+    }
+
+    .aurora-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.12;
+      mix-blend-mode: screen;
+      transition: var(--transition-smooth);
+    }
+
+    .orb-1 {
+      background: radial-gradient(circle, var(--primary) 0%, transparent 80%);
+      width: 60vw;
+      height: 60vw;
+      top: -20vw;
+      left: -10vw;
+      animation: floatSlow 25s infinite alternate;
+    }
+
+    .orb-2 {
+      background: radial-gradient(circle, var(--accent) 0%, transparent 80%);
+      width: 65vw;
+      height: 65vw;
+      bottom: -15vw;
+      right: -10vw;
+      animation: floatSlow 30s infinite alternate-reverse;
+    }
+
+    .orb-3 {
+      background: radial-gradient(circle, var(--success) 0%, transparent 80%);
+      width: 45vw;
+      height: 45vw;
+      top: 25vh;
+      left: 30vw;
+      animation: floatSlow 20s infinite alternate;
+    }
+
+    @keyframes floatSlow {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(6%, 5%) scale(1.1); }
+      100% { transform: translate(-4%, -6%) scale(0.95); }
+    }
+
+    /* Presentation Layout */
+    .deck-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 1;
+    }
+
+    /* Header Styling */
+    .deck-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      background: linear-gradient(to bottom, rgba(7, 7, 10, 0.8) 0%, transparent 100%);
+      z-index: 10;
+    }
+
+    .brand-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: rgba(20, 20, 25, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.12);
+    }
+    
+    .brand-logo-img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .brand-text h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--text-primary) 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .deck-meta {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .slide-number {
+      font-family: var(--font-mono);
+      color: var(--primary);
+      background: rgba(6, 182, 212, 0.06);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(6, 182, 212, 0.15);
+    }
+
+    /* Slide Workspace / Track */
+    .slides-wrapper {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Individual Slide Styles */
+    .slide {
+      position: absolute;
+      width: 86%;
+      height: 80%;
+      max-width: 1200px;
+      max-height: 680px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 50px var(--glass-shadow);
+      padding: 48px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.92) translateY(20px);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  visibility 0.5s;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      z-index: 5;
+    }
+
+    .slide.previous-slide {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.92) translateY(-20px);
+    }
+
+    /* Slide Contents Elements */
+    .slide-header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 16px;
+    }
+
+    .slide-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slide-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-body {
+      flex: 1;
+      position: relative;
+      min-height: 0; /* Enable scrolling if contents overflow slightly */
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    /* Layout Grids */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4col {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    /* General Styling Components */
+    .card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      transition: var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--glass-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    .card.accent-primary::before {
+      background: var(--primary);
+    }
+    
+    .card.accent-success::before {
+      background: var(--success);
+    }
+
+    .card-icon {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* List items */
+    .bullets-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .bullet-item i {
+      margin-top: 4px;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .bullet-item strong {
+      color: var(--text-primary);
+    }
+
+    /* Footer Controls Bar */
+    .deck-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: linear-gradient(to top, rgba(7, 7, 10, 0.8) 0%, transparent 100%);
+      z-index: 10;
+    }
+
+    .footer-instructions {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .key-badge {
+      font-family: var(--font-mono);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-size: 1.1rem;
+    }
+
+    .control-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      border-color: var(--glass-border-hover);
+    }
+
+    .control-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    .control-btn.btn-highlight {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.3);
+      color: var(--accent-hover);
+    }
+    
+    .control-btn.btn-highlight:hover {
+      background: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Progress bar indicator */
+    .progress-bar-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      z-index: 20;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+      transition: width 0.3s ease;
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    /* Interactive Menu Sidebar */
+    .menu-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-size: 1.1rem;
+    }
+
+    .menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .sidebar-menu {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 320px;
+      height: 100vh;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      box-shadow: 20px 0 50px rgba(0,0,0,0.7);
+      z-index: 100;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-menu.active {
+      left: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .close-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .slide-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 4px;
+    }
+
+    .slide-list-item {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slide-list-item i {
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+
+    .slide-list-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+    }
+
+    .slide-list-item.active {
+      background: rgba(6, 182, 212, 0.08);
+      color: var(--primary-hover);
+      border-color: rgba(6, 182, 212, 0.2);
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 90;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Custom Slides Styling */
+    /* Cover Slide */
+    .cover-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+    }
+
+    .cover-logo-shield {
+      width: 90px;
+      height: 90px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
+      position: relative;
+    }
+
+    .cover-logo-shield::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      z-index: -1;
+      opacity: 0.4;
+      filter: blur(6px);
+    }
+
+    .cover-logo-img {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+    }
+
+    .cover-title-group {
+      margin-bottom: 24px;
+    }
+
+    .cover-subtitle {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 8px;
+    }
+
+    .cover-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 20%, #a5b4fc 60%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.03em;
+    }
+
+    .cover-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 640px;
+      margin-bottom: 36px;
+    }
+
+    .cover-meta {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 20px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .cover-meta-item i {
+      color: var(--primary);
+      margin-right: 6px;
+    }
+
+    /* Slide Problem & Challenges */
+    .problem-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .problem-alert-box {
+      background: rgba(239, 68, 68, 0.05);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .problem-alert-box i {
+      font-size: 2.2rem;
+      color: var(--error);
+      text-shadow: 0 0 10px var(--error-glow);
+    }
+
+    .problem-alert-text h4 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .problem-alert-text p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .problem-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .problem-card {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      align-items: flex-start;
+      transition: var(--transition-fast);
+    }
+
+    .problem-card:hover {
+      border-color: rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.02);
+    }
+
+    .problem-card-num {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--error);
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .problem-card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .problem-card-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* Core Features interactive tabs */
+    .features-tabs-container {
+      display: flex;
+      gap: 20px;
+      height: 100%;
+    }
+
+    .features-tabs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    .features-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: left;
+    }
+
+    .features-tab-btn:hover {
+      background: rgba(255,255,255,0.04);
+      color: var(--text-primary);
+    }
+
+    .features-tab-btn.active {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: var(--primary);
+      color: var(--primary-hover);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
+    }
+
+    .features-tab-content-panel {
+      flex: 1;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .features-tab-content {
+      display: none;
+      animation: tabFadeIn 0.3s ease forwards;
+    }
+
+    .features-tab-content.active {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feature-pane-title {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feature-pane-title i {
+      color: var(--primary);
+    }
+
+    .feature-pane-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .feature-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .feature-detail-mini-card {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid rgba(255,255,255,0.04);
+      padding: 14px;
+      border-radius: var(--radius-sm);
+    }
+
+    .feature-detail-mini-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feature-detail-mini-title i {
+      font-size: 0.8rem;
+    }
+
+    .feature-detail-mini-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    /* Database Schema Table Styling */
+    .db-schema-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 24px;
+      height: 100%;
+    }
+
+    .db-tables-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .db-table-item {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .db-table-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--glass-border-hover);
+    }
+
+    .db-table-item.active {
+      background: rgba(99, 102, 241, 0.08);
+      border-color: var(--accent);
+      color: var(--accent-hover);
+    }
+
+    .db-table-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .db-table-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-tertiary);
+    }
+
+    .db-table-item.active .db-table-badge {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-hover);
+    }
+
+    .db-columns-display {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 480px;
+    }
+
+    .db-schema-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .db-schema-table th, .db-schema-table td {
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .db-schema-table th {
+      font-family: var(--font-display);
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .db-col-name {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--primary-hover);
+    }
+
+    .db-col-type {
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    .db-col-key {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--warning);
+      text-transform: uppercase;
+    }
+
+    .db-col-desc {
+      color: var(--text-secondary);
+    }
+
+    .db-pane {
+      display: none;
+    }
+
+    .db-pane.active {
+      display: block;
+      animation: tabFadeIn 0.3s ease forwards;
+    }
+
+    /* Code Blocks */
+    .code-wrapper {
+      position: relative;
+      background: #040406;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .code-header {
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .code-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .code-dot-red { background: #ef4444; }
+    .code-dot-yellow { background: #f59e0b; }
+    .code-dot-green { background: #10b981; }
+
+    .code-body {
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      overflow: auto;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    /* Setup Guide Tabs */
+    .setup-tabs-header {
+      display: flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.02);
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .setup-tab-btn {
+      flex: 1;
+      padding: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: var(--transition-fast);
+    }
+
+    .setup-tab-btn.active {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-primary);
+    }
+
+    .setup-pane {
+      display: none;
+      height: 100%;
+    }
+
+    .setup-pane.active {
+      display: block;
+      animation: tabFadeIn 0.3s ease forwards;
+    }
+
+    /* Flow steppers */
+    .flow-stepper {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    .flow-step-item {
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+
+    .flow-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .flow-step-item.active .flow-step-num {
+      background: rgba(6, 182, 212, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .flow-step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: 16px;
+      width: 1px;
+      height: calc(100% - 16px);
+      background: var(--glass-border);
+      z-index: 1;
+    }
+
+    .flow-step-content {
+      padding-top: 4px;
+    }
+
+    .flow-step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-secondary);
+      transition: var(--transition-fast);
+    }
+
+    .flow-step-item.active .flow-step-title {
+      color: var(--text-primary);
+    }
+
+    .flow-step-desc {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      display: none;
+      animation: tabFadeIn 0.3s ease forwards;
+    }
+
+    .flow-step-item.active .flow-step-desc {
+      display: block;
+      color: var(--text-secondary);
+    }
+
+    /* Live Presensi Simulator Mockup */
+    .simulator-box {
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 20px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding-bottom: 8px;
+    }
+
+    .sim-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .sim-camera {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 2px dashed var(--glass-border);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.01);
+      overflow: hidden;
+    }
+
+    .sim-camera.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .sim-camera.success {
+      border-color: var(--success);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .sim-face-outline {
+      position: absolute;
+      width: 100px;
+      height: 110px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: none;
+    }
+
+    .sim-camera.active .sim-face-outline {
+      display: block;
+      animation: faceScan 2s infinite ease-in-out;
+      border-color: var(--primary-hover);
+    }
+    
+    .sim-camera.success .sim-face-outline {
+      display: block;
+      border-color: var(--success);
+    }
+
+    @keyframes faceScan {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+
+    .sim-camera i {
+      font-size: 2.2rem;
+      color: var(--text-tertiary);
+    }
+
+    .sim-camera.active i {
+      color: var(--primary);
+    }
+
+    .sim-camera.success i {
+      color: var(--success);
+    }
+
+    .sim-avatar-mock {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .sim-camera.success .sim-avatar-mock {
+      display: block;
+    }
+    .sim-camera.success .sim-avatar-icon {
+      display: none;
+    }
+
+    .sim-log {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-align: left;
+      height: 72px;
+      overflow-y: auto;
+      color: var(--text-secondary);
+    }
+
+    .sim-log-line {
+      margin-bottom: 2px;
+    }
+    .sim-log-line.success { color: var(--success); }
+    .sim-log-line.primary { color: var(--primary); }
+
+    .sim-action-btn {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+    }
+
+    .sim-action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(6, 182, 212, 0.35);
+    }
+
+    .sim-action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .sim-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255,255,255,0.05);
+      text-transform: uppercase;
+    }
+
+    .sim-badge.active {
+      background: rgba(6,182,212,0.1);
+      color: var(--primary);
+      border-color: rgba(6,182,212,0.2);
+    }
+
+    .sim-badge.success {
+      background: rgba(16,185,129,0.1);
+      color: var(--success);
+      border-color: rgba(16,185,129,0.2);
+    }
+
+    /* Custom Scrollbars inside slides */
+    .slide-body::-webkit-scrollbar, .db-columns-display::-webkit-scrollbar, .code-body::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .slide-body::-webkit-scrollbar-track, .db-columns-display::-webkit-scrollbar-track, .code-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .slide-body::-webkit-scrollbar-thumb, .db-columns-display::-webkit-scrollbar-thumb, .code-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-full);
+    }
+    .slide-body::-webkit-scrollbar-thumb:hover, .db-columns-display::-webkit-scrollbar-thumb:hover, .code-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Responsive adjustments */
+    @media (max-height: 720px) {
+      .slide {
+        padding: 30px;
+        height: 85%;
+      }
+      .slide-title {
+        font-size: 1.8rem;
+      }
+      .slide-header {
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body class="dark-theme">
+
+  <!-- Glowing Decorative Aurora Background -->
+  <div class="aurora-bg">
+    <div class="aurora-orb orb-1"></div>
+    <div class="aurora-orb orb-2"></div>
+    <div class="aurora-orb orb-3"></div>
+  </div>
+
+  <div class="deck-container">
+    
+    <!-- HEADER BAR -->
+    <header class="deck-header">
+      <div class="brand-logo-container">
+        <div class="brand-logo">
+          <img src="logo_murungraya.png" alt="Logo Murung Raya" class="brand-logo-img" onerror="this.style.display='none'">
+        </div>
+        <div class="brand-text">
+          <h1>Sistem Smart Absensi & Jurnal</h1>
+          <p>Disdukcapil Kab. Murung Raya</p>
+        </div>
+      </div>
+      
+      <div class="deck-meta">
+        <span>Slide <span id="current-slide-num" class="slide-number">01 / 10</span></span>
+      </div>
+    </header>
+
+    <!-- SLIDES WORKSPACE -->
+    <main class="slides-wrapper">
+
+      <!-- SLIDE 1: COVER -->
+      <section class="slide active" data-slide-id="1">
+        <div class="cover-content">
+          <div class="cover-logo-shield">
+            <img src="logo_murungraya.png" alt="Logo Murung Raya" class="cover-logo-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1177/1177568.png'">
+          </div>
+          <div class="cover-title-group">
+            <span class="cover-subtitle">Pemaparan Teknis Aplikasi</span>
+            <h2 class="cover-title">SMART ABSENSI</h2>
+            <h3 style="font-size: 1.3rem; font-weight: 500; color: var(--text-secondary); margin-top: 8px;">
+              Sistem Presensi Biometrik & Geofencing Pegawai Outsourcing
+            </h3>
+          </div>
+          <p class="cover-desc">
+            Sistem modern yang dirancang untuk transparansi kehadiran dan produktivitas harian pegawai non-ASN menggunakan kecerdasan buatan dan validasi koordinat di sisi server.
+          </p>
+          <div class="cover-meta">
+            <span class="cover-meta-item"><i class="fa-solid fa-hotel"></i> Disdukcapil Mura</span>
+            <span class="cover-meta-item"><i class="fa-solid fa-server"></i> Neon DB + Vercel</span>
+            <span class="cover-meta-item"><i class="fa-solid fa-brain"></i> AI Local Processing</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: LATAR BELAKANG & MASALAH -->
+      <section class="slide" data-slide-id="2">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-triangle-exclamation"></i> Latar Belakang</span>
+          <h2 class="slide-title">Masalah & Tantangan Lapangan</h2>
+        </header>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="problem-left">
+              <h3 style="font-size: 1.5rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">
+                Mengapa Sistem Absensi Manual & Konvensional Harus Diganti?
+              </h3>
+              <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 12px;">
+                Kehadiran pegawai outsourcing di Dinas Kependudukan dan Pencatatan Sipil Kab. Murung Raya memegang peranan krusial dalam pelayanan publik. Namun, beberapa kendala menghambat objektivitas evaluasi kinerja.
+              </p>
+              <div class="problem-alert-box">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="problem-alert-text">
+                  <h4>Potensi Manipulasi Tinggi</h4>
+                  <p>Absensi konvensional atau berbasis chat/foto biasa mudah dimanipulasi dengan pengiriman foto lama atau mock GPS lokasi palsu.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="problem-cards">
+              <div class="problem-card">
+                <span class="problem-card-num">01</span>
+                <div>
+                  <h4 class="problem-card-title">Ketidakakuratan Data Kehadiran</h4>
+                  <p class="problem-card-desc">Sering terjadi fenomena "titip absen" atau melakukan pencatatan dari luar area kerja tanpa pengawasan langsung.</p>
+                </div>
+              </div>
+              
+              <div class="problem-card">
+                <span class="problem-card-num">02</span>
+                <div>
+                  <h4 class="problem-card-title">Ketiadaan Laporan Aktivitas Harian</h4>
+                  <p class="problem-card-desc">Pengawas administrasi kesulitan mengetahui apa yang dikerjakan karyawan outsourcing setiap harinya secara objektif.</p>
+                </div>
+              </div>
+              
+              <div class="problem-card">
+                <span class="problem-card-num">03</span>
+                <div>
+                  <h4 class="problem-card-title">Proses Rekapitulasi Manual yang Lambat</h4>
+                  <p class="problem-card-desc">Admin harus mencocokkan laporan kertas atau spreadsheet di akhir bulan, memakan waktu kerja yang berharga.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: SOLUSI YANG DITAWARKAN -->
+      <section class="slide" data-slide-id="3">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-circle-check"></i> Solusi Sistem</span>
+          <h2 class="slide-title">Solusi Smart Absensi Pintar</h2>
+        </header>
+        <div class="slide-body">
+          <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem;">
+            Kami mengimplementasikan aplikasi web responsif (HP & Desktop) dengan sistem verifikasi ganda terdesentralisasi:
+          </p>
+          <div class="grid-3col">
+            <div class="card accent-primary">
+              <div class="card-icon" style="color: var(--primary);"><i class="fa-solid fa-eye"></i></div>
+              <h4 class="card-title">Biometric Face Verification</h4>
+              <p class="card-desc">Menggunakan AI (Tensorflow.js) untuk mengekstrak <em>face embedding</em> biometrik wajah. Pengguna tidak bisa melakukan absen menggunakan foto orang lain.</p>
+            </div>
+            
+            <div class="card">
+              <div class="card-icon" style="color: var(--accent);"><i class="fa-solid fa-location-crosshairs"></i></div>
+              <h4 class="card-title">GPS Geofencing</h4>
+              <p class="card-desc">Membaca lokasi GPS real-time dan memverifikasinya di sisi server dengan rumus Haversine. Absensi ditolak jika jarak ke kantor melebihi 150 meter.</p>
+            </div>
+            
+            <div class="card accent-success">
+              <div class="card-icon" style="color: var(--success);"><i class="fa-solid fa-book"></i></div>
+              <h4 class="card-title">Daily Activity Journal</h4>
+              <p class="card-desc">Karyawan wajib menulis ringkasan tugas harian sebelum diizinkan melapor pulang (Check-out), memberikan metrik produktivitas harian.</p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px; background: rgba(99, 102, 241, 0.04); border: 1px dashed rgba(99, 102, 241, 0.15); padding: 18px; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary);">
+            <i class="fa-solid fa-fingerprint" style="color: var(--accent); margin-right: 8px;"></i>
+            <strong>Keamanan Liveness Detection:</strong> AI melatih pendeteksian subjek hidup secara dinamis (liveness challenge) untuk menepis spoofing foto cetak atau layar handphone.
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: FITUR UTAMA APLIKASI -->
+      <section class="slide" data-slide-id="4">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-cubes"></i> Fitur Aplikasi</span>
+          <h2 class="slide-title">Fitur Unggulan Sistem</h2>
+        </header>
+        <div class="slide-body">
+          <div class="features-tabs-container">
+            <div class="features-tabs-list">
+              <button class="features-tab-btn active" onclick="switchFeatureTab(0)">
+                <i class="fa-solid fa-camera"></i> Presensi Biometrik
+              </button>
+              <button class="features-tab-btn" onclick="switchFeatureTab(1)">
+                <i class="fa-solid fa-map-location-dot"></i> Geofencing GPS
+              </button>
+              <button class="features-tab-btn" onclick="switchFeatureTab(2)">
+                <i class="fa-solid fa-file-invoice"></i> Cuti & QR Verifier
+              </button>
+              <button class="features-tab-btn" onclick="switchFeatureTab(3)">
+                <i class="fa-solid fa-chart-line"></i> Dashboard Admin
+              </button>
+            </div>
+            
+            <div class="features-tab-content-panel">
+              <!-- Tab 1 -->
+              <div class="features-tab-content active" id="f-tab-0">
+                <div>
+                  <h4 class="feature-pane-title"><i class="fa-solid fa-user-check"></i> Presensi Wajah & Liveness Detection</h4>
+                  <p class="feature-pane-text">
+                    Pemrosesan deteksi wajah dijalankan langsung di browser sisi klien (Face-api.js) untuk menghindari pengiriman video mentah ke server (hemat kuota data). Menggunakan tantangan acak seperti "Tolehkan kepala" atau "Kedipkan mata" untuk memastikan keaslian pengguna.
+                  </p>
+                </div>
+                <div class="feature-details-grid">
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-bolt"></i> Local Embedding</span>
+                    <span class="feature-detail-mini-desc">Vektor 128-dimensi wajah diekstrak secara lokal. Kecepatan verifikasi &lt; 1.5 detik.</span>
+                  </div>
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-lock"></i> Anti Spoofing</span>
+                    <span class="feature-detail-mini-desc">Menolak foto di kertas, file digital di layar HP kedua, maupun topeng cetak.</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Tab 2 -->
+              <div class="features-tab-content" id="f-tab-1">
+                <div>
+                  <h4 class="feature-pane-title"><i class="fa-solid fa-earth-asia"></i> Geofencing Validasi Jarak</h4>
+                  <p class="feature-pane-text">
+                    Aplikasi mengambil koordinat GPS perangkat karyawan dan melakukan validasi jarak hipotenus dengan titik acuan kantor Disdukcapil (Latitude: <b>-0.6225</b>, Longitude: <b>114.5931</b>). Server menghitung dengan rumus Haversine untuk ketepatan akurasi spasial.
+                  </p>
+                </div>
+                <div class="feature-details-grid">
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-ban"></i> Block Fake GPS</span>
+                    <span class="feature-detail-mini-desc">Mendeteksi dan memblokir modifikasi lokasi melalui software Mock Location.</span>
+                  </div>
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-arrows-to-dot"></i> Radius 150m</span>
+                    <span class="feature-detail-mini-desc">Batas area wajar yang mencakup seluruh bangunan kantor dan area parkir Disdukcapil.</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Tab 3 -->
+              <div class="features-tab-content" id="f-tab-2">
+                <div>
+                  <h4 class="feature-pane-title"><i class="fa-solid fa-file-pdf"></i> Pengajuan Cuti & Verifikator QR</h4>
+                  <p class="feature-pane-text">
+                    Karyawan dapat mengajukan izin sakit (dengan menyertakan SKD) atau cuti langsung di aplikasi. Saat disetujui admin, sistem menghasilkan Surat Cuti digital berformat PDF yang disisipi kode QR unik yang dapat dipindai publik untuk verifikasi keabsahannya.
+                  </p>
+                </div>
+                <div class="feature-details-grid">
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-qrcode"></i> Public Verification Portal</span>
+                    <span class="feature-detail-mini-desc">Siapapun dapat memindai QR code di surat untuk membuktikan keaslian dokumen di server.</span>
+                  </div>
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-file-shield"></i> Bebas Pemalsuan</span>
+                    <span class="feature-detail-mini-desc">Mencegah manipulasi surat izin dinas manual oleh oknum tidak bertanggung jawab.</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Tab 4 -->
+              <div class="features-tab-content" id="f-tab-3">
+                <div>
+                  <h4 class="feature-pane-title"><i class="fa-solid fa-chart-simple"></i> Dashboard & Laporan Otomatis</h4>
+                  <p class="feature-pane-text">
+                    Admin dapat melihat sebaran presensi harian, grafik keterlambatan, tabel detail log datang/pulang beserta foto bukti wajah, serta lokasi absen di peta interaktif Leaflet.js. Admin juga dapat mengunduh laporan PDF bulanan per karyawan lengkap dengan akumulasi rekapitulasi.
+                  </p>
+                </div>
+                <div class="feature-details-grid">
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-file-excel"></i> Ekspor CSV / PDF</span>
+                    <span class="feature-detail-mini-desc">Cetak laporan format Excel dan PDF bulanan secara instan untuk bahan evaluasi.</span>
+                  </div>
+                  <div class="feature-detail-mini-card">
+                    <span class="feature-detail-mini-title"><i class="fa-solid fa-clock"></i> Manajemen Shift & Libur</span>
+                    <span class="feature-detail-mini-desc">Mengatur batas waktu shift (Pagi/Malam) dan menetapkan kalender hari libur nasional.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: INTERACTIVE PRESENSI SIMULATOR -->
+      <section class="slide" data-slide-id="5">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-gamepad"></i> Demo Interaktif</span>
+          <h2 class="slide-title">Simulasi Proses Absensi Karyawan</h2>
+        </header>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">Tiga Langkah Validasi Sistem:</h3>
+              <div class="flow-stepper">
+                <div class="flow-step-item active" id="s-step-1">
+                  <div class="flow-step-num">1</div>
+                  <div class="flow-step-content">
+                    <h4 class="flow-step-title">Inisialisasi GPS & Radius Geofencing</h4>
+                    <p class="flow-step-desc">Membaca lokasi GPS karyawan dan membandingkannya dengan pusat kantor Disdukcapil (toleransi 150m).</p>
+                  </div>
+                </div>
+                
+                <div class="flow-step-item" id="s-step-2">
+                  <div class="flow-step-num">2</div>
+                  <div class="flow-step-content">
+                    <h4 class="flow-step-title">Pengaktifan Kamera & Deteksi Biometrik</h4>
+                    <p class="flow-step-desc">Kamera aktif, AI mendeteksi koordinat wajah dan mencocokkan face embedding dengan data master.</p>
+                  </div>
+                </div>
+                
+                <div class="flow-step-item" id="s-step-3">
+                  <div class="flow-step-num">3</div>
+                  <div class="flow-step-content">
+                    <h4 class="flow-step-title">Tantangan Keaktifan Wajah (Liveness) & Konfirmasi</h4>
+                    <p class="flow-step-desc">Pengguna diminta berkedip. Setelah lolos, data terkirim ke Neon PostgreSQL database.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Live interactive simulator box -->
+            <div class="simulator-box">
+              <div class="sim-header">
+                <span>SIMULATOR GADGET PEGAWAI</span>
+                <span class="sim-badge" id="sim-status-badge">Standby</span>
+              </div>
+              
+              <div class="sim-body">
+                <div class="sim-camera" id="sim-cam-viewport">
+                  <!-- Simulated user face avatar -->
+                  <i class="fa-solid fa-user-astronaut sim-avatar-icon"></i>
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Face Avatar" class="sim-avatar-mock" id="sim-face-avatar">
+                  <div class="sim-face-outline"></div>
+                </div>
+                <div class="sim-info" style="font-size: 0.82rem; width: 100%;">
+                  <span id="sim-display-msg" style="color: var(--text-secondary); display: block; font-weight: 500;">Silakan klik tombol di bawah untuk simulasi absensi.</span>
+                </div>
+                <div class="sim-log" id="sim-logger-box">
+                  <div class="sim-log-line">System ready. Waiting for user action.</div>
+                </div>
+              </div>
+              
+              <button class="sim-action-btn" id="btn-sim-action" onclick="runAttendanceSimulation()">
+                Mulai Simulasi Absen
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: ALUR PENGGUNA (USER FLOW) -->
+      <section class="slide" data-slide-id="6">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-network-wired"></i> Alur Kerja</span>
+          <h2 class="slide-title">Diagram Alur Pengguna (User Flow)</h2>
+        </header>
+        <div class="slide-body">
+          <div class="grid-2col" style="align-items: stretch;">
+            <!-- Column 1: Employee flow -->
+            <div class="card accent-primary" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--primary);">
+                  <i class="fa-solid fa-user-tie"></i> Perjalanan Pegawai Harian
+                </h4>
+                <ul class="bullets-list" style="gap: 10px;">
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Login Akun:</strong> Pegawai masuk menggunakan email dinas dan sandi terdaftar.</span>
+                  </li>
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Lapor Datang:</strong> Memberikan izin GPS & kamera, deteksi wajah, dan kirim presensi (Hadir/Terlambat).</span>
+                  </li>
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Jurnal Pekerjaan:</strong> Sebelum pulang, pegawai mengetik pekerjaan harian yang terselesaikan.</span>
+                  </li>
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Lapor Pulang:</strong> Menekan lapor pulang dengan pemindaian biometrik & GPS yang sama.</span>
+                  </li>
+                </ul>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary); border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px; margin-top: 12px;">
+                <i class="fa-solid fa-info-circle"></i> Catatan kehadiran tersimpan otomatis di Neon PostgreSQL.
+              </div>
+            </div>
+
+            <!-- Column 2: Admin flow -->
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--accent-hover);">
+                  <i class="fa-solid fa-user-shield"></i> Alur Kerja Admin & Pengawas
+                </h4>
+                <ul class="bullets-list" style="gap: 10px;">
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Pantau Real-time:</strong> Admin login dan melihat KPI hari ini (jumlah hadir, terlambat, luar radius).</span>
+                  </li>
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Verifikasi Bukti:</strong> Melihat visual foto wajah selfie & sebaran radar lokasi GPS karyawan.</span>
+                  </li>
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Kelola Sistem:</strong> Mengedit daftar pegawai, shift jam kerja, libur, dan persetujuan cuti.</span>
+                  </li>
+                  <li class="bullet-item">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span><strong>Laporan Bulanan:</strong> Cetak rekap bulanan & jurnal laporan pekerjaan PDF per karyawan.</span>
+                  </li>
+                </ul>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary); border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px; margin-top: 12px;">
+                <i class="fa-solid fa-qrcode"></i> QR code di Surat Cuti dapat divalidasi langsung oleh pihak luar lewat scan kamera HP.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: ARSITEKTUR & TEKNOLOGI -->
+      <section class="slide" data-slide-id="7">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-gears"></i> Spesifikasi Teknis</span>
+          <h2 class="slide-title">Arsitektur & Tech Stack</h2>
+        </header>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <!-- Left col: diagram list -->
+            <div class="bullets-list" style="justify-content: center; gap: 16px;">
+              <div style="display: flex; gap: 14px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); padding: 14px; border-radius: var(--radius-sm);">
+                <span style="font-size: 1.5rem; color: var(--primary);"><i class="fa-solid fa-display"></i></span>
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 2px;">Frontend Responsif</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-secondary);">HTML5, Vanilla CSS (Aurora Dark), Leaflet.js (Map), face-api.js (TensorFlow Client-Side biometrics).</p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: 14px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); padding: 14px; border-radius: var(--radius-sm);">
+                <span style="font-size: 1.5rem; color: var(--accent-hover);"><i class="fa-solid fa-network-wired"></i></span>
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 2px;">Serverless Backend</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-secondary);">Node.js Express API di-deploy ke Vercel Serverless Functions. Menangani hitungan jarak GPS server-side & generate PDF.</p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: 14px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); padding: 14px; border-radius: var(--radius-sm);">
+                <span style="font-size: 1.5rem; color: var(--success);"><i class="fa-solid fa-database"></i></span>
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 2px;">Database Cloud Serverless</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-secondary);">Neon PostgreSQL. Menjamin ketahanan transaksi data, skalabilitas instan, dan performa query database relasional yang cepat.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right col: visual flow -->
+            <div style="display: flex; flex-direction: column; justify-content: center; gap: 20px; background: rgba(0,0,0,0.2); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--glass-border); height: 100%;">
+              <h4 style="font-size: 1rem; font-weight: 600; text-align: center; color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 10px; margin-bottom: 10px;">
+                Visualisasi Alur Keamanan Data
+              </h4>
+              <div style="display: flex; justify-content: space-between; align-items: center; text-align: center; font-size: 0.75rem;">
+                <div style="width: 28%;">
+                  <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--primary); padding: 8px; border-radius: 6px; font-weight: 600; color: var(--primary-hover); font-family: var(--font-mono); margin-bottom: 6px;">KLIEN / HP</div>
+                  <span>Deteksi Wajah & GPS Lokasi Awal</span>
+                </div>
+                <div style="color: var(--text-tertiary);"><i class="fa-solid fa-arrow-right-long fa-xl"></i></div>
+                <div style="width: 28%;">
+                  <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent); padding: 8px; border-radius: 6px; font-weight: 600; color: var(--accent-hover); font-family: var(--font-mono); margin-bottom: 6px;">VERCEL API</div>
+                  <span>Hitung Haversine & Validasi Lokasi</span>
+                </div>
+                <div style="color: var(--text-tertiary);"><i class="fa-solid fa-arrow-right-long fa-xl"></i></div>
+                <div style="width: 28%;">
+                  <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); padding: 8px; border-radius: 6px; font-weight: 600; color: var(--success); font-family: var(--font-mono); margin-bottom: 6px;">NEON DB</div>
+                  <span>Simpan Log Kehadiran Aman</span>
+                </div>
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-secondary); text-align: center; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 12px; margin-top: 6px; line-height: 1.4;">
+                <i class="fa-solid fa-shield-halved" style="color: var(--success); margin-right: 4px;"></i>
+                Metode Haversine menghitung jarak linear melengkung bumi secara akurat untuk menangkal kecurangan mock location GPS.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: SKEMA BASIS DATA (DATABASE SCHEMA) -->
+      <section class="slide" data-slide-id="8">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-database"></i> Database</span>
+          <h2 class="slide-title">Skema Database PostgreSQL</h2>
+        </header>
+        <div class="slide-body">
+          <div class="db-schema-grid">
+            <div class="db-tables-list">
+              <div class="db-table-item active" onclick="switchDbTable(0)">
+                <span class="db-table-name">users</span>
+                <span class="db-table-badge">Master</span>
+              </div>
+              <div class="db-table-item" onclick="switchDbTable(1)">
+                <span class="db-table-name">attendances</span>
+                <span class="db-table-badge">Relasi</span>
+              </div>
+              <div class="db-table-item" onclick="switchDbTable(2)">
+                <span class="db-table-name">journals</span>
+                <span class="db-table-badge">Relasi</span>
+              </div>
+              <div class="db-table-item" onclick="switchDbTable(3)">
+                <span class="db-table-name">permits</span>
+                <span class="db-table-badge">Relasi</span>
+              </div>
+            </div>
+            
+            <div class="db-columns-display">
+              <!-- Users Table Columns -->
+              <div class="db-pane active" id="db-pane-0">
+                <h4 style="font-size: 1rem; margin-bottom: 12px; font-family: var(--font-mono); color: var(--accent-hover);">TABEL: users (Menyimpan akun Karyawan dan Admin)</h4>
+                <table class="db-schema-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%;">Kolom</th>
+                      <th style="width: 25%;">Tipe Data</th>
+                      <th style="width: 15%;">Atribut</th>
+                      <th style="width: 35%;">Deskripsi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="db-col-name">id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">PRIMARY KEY</td>
+                      <td class="db-col-desc">ID unik untuk setiap pengguna.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">name</td>
+                      <td class="db-col-type">VARCHAR(100)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Nama lengkap pegawai / pengawas.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">role</td>
+                      <td class="db-col-type">VARCHAR(20)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Status akun: 'karyawan', 'admin', atau 'pengawas'.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">email</td>
+                      <td class="db-col-type">VARCHAR(100)</td>
+                      <td>UNIQUE</td>
+                      <td class="db-col-desc">Email dinas untuk masuk sistem.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">password</td>
+                      <td class="db-col-type">VARCHAR(255)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Kata sandi terenkripsi (bcrypt).</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">face_embedding</td>
+                      <td class="db-col-type">TEXT</td>
+                      <td>NULLABLE</td>
+                      <td class="db-col-desc">Vektor string representasi matematika wajah pegawai.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Attendances Table Columns -->
+              <div class="db-pane" id="db-pane-1">
+                <h4 style="font-size: 1rem; margin-bottom: 12px; font-family: var(--font-mono); color: var(--accent-hover);">TABEL: attendances (Menyimpan riwayat absensi harian)</h4>
+                <table class="db-schema-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%;">Kolom</th>
+                      <th style="width: 25%;">Tipe Data</th>
+                      <th style="width: 15%;">Atribut</th>
+                      <th style="width: 35%;">Deskripsi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="db-col-name">id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">PRIMARY KEY</td>
+                      <td class="db-col-desc">ID unik riwayat presensi.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">user_id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">FOREIGN KEY</td>
+                      <td class="db-col-desc">Relasi ID pengguna ke tabel users.id.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">date</td>
+                      <td class="db-col-type">DATE</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Tanggal presensi dilakukan.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">check_in_time</td>
+                      <td class="db-col-type">TIMESTAMP</td>
+                      <td>NULLABLE</td>
+                      <td class="db-col-desc">Waktu persis melapor datang.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">check_out_time</td>
+                      <td class="db-col-type">TIMESTAMP</td>
+                      <td>NULLABLE</td>
+                      <td class="db-col-desc">Waktu persis melapor pulang.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">photo_url</td>
+                      <td class="db-col-type">TEXT</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Tautan foto bukti selfie presensi.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">latitude_longitude</td>
+                      <td class="db-col-type">VARCHAR(100)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Koordinat GPS (lat,lng) saat melakukan presensi.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">status</td>
+                      <td class="db-col-type">VARCHAR(50)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Status: 'Hadir', 'Terlambat', 'Luar Radius', 'Gagal Verifikasi'.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Journals Table Columns -->
+              <div class="db-pane" id="db-pane-2">
+                <h4 style="font-size: 1rem; margin-bottom: 12px; font-family: var(--font-mono); color: var(--accent-hover);">TABEL: journals (Laporan uraian tugas kerja harian)</h4>
+                <table class="db-schema-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%;">Kolom</th>
+                      <th style="width: 25%;">Tipe Data</th>
+                      <th style="width: 15%;">Atribut</th>
+                      <th style="width: 35%;">Deskripsi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="db-col-name">id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">PRIMARY KEY</td>
+                      <td class="db-col-desc">ID unik jurnal laporan pekerjaan.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">user_id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">FOREIGN KEY</td>
+                      <td class="db-col-desc">Relasi ID pengguna ke tabel users.id.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">date</td>
+                      <td class="db-col-type">DATE</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Tanggal penulisan jurnal laporan.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">task_description</td>
+                      <td class="db-col-type">TEXT</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Uraian lengkap teks tugas yang diselesaikan karyawan.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Permits Table Columns -->
+              <div class="db-pane" id="db-pane-3">
+                <h4 style="font-size: 1rem; margin-bottom: 12px; font-family: var(--font-mono); color: var(--accent-hover);">TABEL: permits (Data permohonan izin sakit & cuti)</h4>
+                <table class="db-schema-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%;">Kolom</th>
+                      <th style="width: 25%;">Tipe Data</th>
+                      <th style="width: 15%;">Atribut</th>
+                      <th style="width: 35%;">Deskripsi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="db-col-name">id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">PRIMARY KEY</td>
+                      <td class="db-col-desc">ID unik data pengajuan cuti/izin.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">user_id</td>
+                      <td class="db-col-type">UUID</td>
+                      <td class="db-col-key">FOREIGN KEY</td>
+                      <td class="db-col-desc">Relasi ID pengguna ke tabel users.id.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">permit_type</td>
+                      <td class="db-col-type">VARCHAR(20)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Jenis: 'izin' (tidak masuk), 'sakit', atau 'cuti'.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">start_date</td>
+                      <td class="db-col-type">DATE</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Tanggal mulai awal izin / cuti dinas.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">end_date</td>
+                      <td class="db-col-type">DATE</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Tanggal berakhir selesainya izin / cuti.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">reason</td>
+                      <td class="db-col-type">TEXT</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Alasan logis pengajuan yang diajukan pegawai.</td>
+                    </tr>
+                    <tr>
+                      <td class="db-col-name">status</td>
+                      <td class="db-col-type">VARCHAR(30)</td>
+                      <td>NOT NULL</td>
+                      <td class="db-col-desc">Status saat ini: 'pending', 'approved', atau 'rejected'.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: PANDUAN DEPLOYMENT & SETUP -->
+      <section class="slide" data-slide-id="9">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-cloud-arrow-up"></i> Deployment</span>
+          <h2 class="slide-title">Deployment ke Vercel & Neon DB</h2>
+        </header>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <!-- Left side: checklist steps -->
+            <div class="bullets-list" style="justify-content: center; gap: 12px;">
+              <div class="bullet-item">
+                <i class="fa-solid fa-circle-check" style="color: var(--success);"></i>
+                <span><strong>Setup Database Neon:</strong> Daftar di Neon.tech dan buat database PostgreSQL instan. Dapatkan string koneksi database.</span>
+              </div>
+              <div class="bullet-item">
+                <i class="fa-solid fa-circle-check" style="color: var(--success);"></i>
+                <span><strong>Hubungkan Git Repo:</strong> Push folder source code absensi ini ke repository GitHub Anda.</span>
+              </div>
+              <div class="bullet-item">
+                <i class="fa-solid fa-circle-check" style="color: var(--success);"></i>
+                <span><strong>Deploy di Vercel:</strong> Hubungkan GitHub repo ke Vercel, lalu isikan variabel lingkungan <code>DATABASE_URL</code> dengan koneksi string Neon.</span>
+              </div>
+              <div class="bullet-item">
+                <i class="fa-solid fa-circle-check" style="color: var(--success);"></i>
+                <span><strong>Inisialisasi Skema:</strong> Akses rute khusus <code>https://domain-vercel.app/api/setup</code> sekali untuk membuat seluruh tabel & data akun awal.</span>
+              </div>
+            </div>
+            
+            <!-- Right side: code snippet preview -->
+            <div style="height: 100%; display: flex; flex-direction: column;">
+              <div class="setup-tabs-header">
+                <button class="setup-tab-btn active" onclick="switchSetupTab(0)">Environment Var</button>
+                <button class="setup-tab-btn" onclick="switchSetupTab(1)">Struktur Setup API</button>
+              </div>
+              
+              <div class="code-wrapper">
+                <div class="code-header">
+                  <div class="code-dots">
+                    <span class="code-dot code-dot-red"></span>
+                    <span class="code-dot code-dot-yellow"></span>
+                    <span class="code-dot code-dot-green"></span>
+                  </div>
+                  <span id="code-file-name">.env.example</span>
+                </div>
+                <!-- Pane 1 -->
+                <div class="code-body setup-pane active" id="s-pane-0">
+                  <span style="color: #64748b;"># Neon PostgreSQL Connection URL</span><br>
+                  <span style="color: #06b6d4;">DATABASE_URL</span>=<span style="color: #fbbf24;">"postgresql://admin:xxxxxx@ep-cool-pool-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"</span><br><br>
+                  <span style="color: #64748b;"># Default App Configuration</span><br>
+                  <span style="color: #06b6d4;">OFFICE_LATITUDE</span>=<span style="color: #a5b4fc;">-0.622500</span><br>
+                  <span style="color: #06b6d4;">OFFICE_LONGITUDE</span>=<span style="color: #a5b4fc;">114.593100</span><br>
+                  <span style="color: #06b6d4;">OFFICE_RADIUS_METERS</span>=<span style="color: #a5b4fc;">150</span>
+                </div>
+                <!-- Pane 2 -->
+                <div class="code-body setup-pane" id="s-pane-1">
+                  <span style="color: #a5b4fc;">import</span> { db } <span style="color: #a5b4fc;">from</span> <span style="color: #fbbf24;">'@/api/db'</span>;<br><br>
+                  <span style="color: #a5b4fc;">export default async function</span> <span style="color: #06b6d4;">handler</span>(req, res) {<br>
+                  &nbsp;&nbsp;<span style="color: #a5b4fc;">try</span> {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #64748b;">// 1. Eksekusi DDL query migrasi tabel</span><br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #a5b4fc;">await</span> db.query(migrationQuery);<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #64748b;">// 2. Seeding default data administrator & pegawai</span><br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #a5b4fc;">await</span> db.query(seedQuery);<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;res.status(<span style="color: #a5b4fc;">200</span>).json({ success: <span style="color: #a5b4fc;">true</span>, message: <span style="color: #fbbf24;">"DB Initialized"</span> });<br>
+                  &nbsp;&nbsp;} <span style="color: #a5b4fc;">catch</span> (err) {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;res.status(<span style="color: #a5b4fc;">500</span>).json({ error: err.message });<br>
+                  &nbsp;&nbsp;}<br>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: KESIMPULAN & MANFAAT -->
+      <section class="slide" data-slide-id="10">
+        <header class="slide-header">
+          <span class="slide-tag"><i class="fa-solid fa-award"></i> Kesimpulan</span>
+          <h2 class="slide-title">Keunggulan & Manfaat Aplikasi</h2>
+        </header>
+        <div class="slide-body">
+          <div class="grid-2col" style="align-items: center;">
+            <div class="bullets-list" style="gap: 18px;">
+              <div style="display: flex; gap: 14px;">
+                <span style="font-size: 1.4rem; color: var(--success);"><i class="fa-solid fa-shield-halved"></i></span>
+                <div>
+                  <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 2px;">Bebas Kecurangan (Anti-Fraud)</h4>
+                  <p style="font-size: 0.82rem; color: var(--text-secondary);">Validasi biometrik wajah & radar geofencing GPS server-side menghapus celah bolos dan manipulasi lokasi palsu.</p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: 14px;">
+                <span style="font-size: 1.4rem; color: var(--primary);"><i class="fa-solid fa-chart-line"></i></span>
+                <div>
+                  <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 2px;">Transparansi & Evaluasi Produktivitas</h4>
+                  <p style="font-size: 0.82rem; color: var(--text-secondary);">Jurnal aktivitas memaksa pegawai outsourcing mendokumentasikan hasil pekerjaan harian demi transparansi kerja.</p>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 14px;">
+                <span style="font-size: 1.4rem; color: var(--accent-hover);"><i class="fa-solid fa-bolt"></i></span>
+                <div>
+                  <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 2px;">Hemat Kuota & Mudah Diakses</h4>
+                  <p style="font-size: 0.82rem; color: var(--text-secondary);">Dapat dijalankan langsung lewat browser Chrome/Safari di HP tanpa perlu repot mengunduh aplikasi di Play Store / App Store.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Graphic container -->
+            <div class="card accent-primary" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 36px 20px;">
+              <div style="font-size: 3rem; color: var(--primary);"><i class="fa-solid fa-circle-check"></i></div>
+              <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">Sistem Siap Diimplementasikan</h3>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); max-width: 320px; line-height: 1.5;">
+                Mewujudkan tata kelola birokrasi digital yang akurat, transparan, dan produktif di lingkungan Dinas Kependudukan dan Pencatatan Sipil Kab. Murung Raya.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER CONTROLS -->
+    <footer class="deck-footer">
+      <div class="footer-instructions">
+        <button class="menu-toggle" onclick="toggleSidebarMenu()" title="Daftar Slide">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <span>Navigasi: <span class="key-badge">←</span> <span class="key-badge">→</span> atau <span class="key-badge">Spasi</span></span>
+      </div>
+      
+      <div class="nav-controls">
+        <button class="control-btn" id="btn-prev-slide" onclick="changeSlide(-1)" disabled title="Slide Sebelumnya">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="control-btn btn-highlight" id="btn-next-slide" onclick="changeSlide(1)" title="Slide Selanjutnya">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Progress Indicator Bar -->
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="slide-progress-fill"></div>
+    </div>
+
+    <!-- SIDEBAR INDEX MENU -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebarMenu()"></div>
+    <aside class="sidebar-menu" id="sidebar-menu">
+      <div class="sidebar-header">
+        <span class="sidebar-title"><i class="fa-solid fa-list-ul"></i> Daftar Slide</span>
+        <button class="close-btn" onclick="toggleSidebarMenu()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <ul class="slide-list">
+        <li class="slide-list-item active" onclick="goToSlide(1)"><i class="fa-solid fa-circle-play"></i> 1. Smart Absensi (Cover)</li>
+        <li class="slide-list-item" onclick="goToSlide(2)"><i class="fa-solid fa-triangle-exclamation"></i> 2. Latar Belakang & Masalah</li>
+        <li class="slide-list-item" onclick="goToSlide(3)"><i class="fa-solid fa-lightbulb"></i> 3. Solusi Sistem Absensi</li>
+        <li class="slide-list-item" onclick="goToSlide(4)"><i class="fa-solid fa-cubes"></i> 4. Fitur Unggulan Sistem</li>
+        <li class="slide-list-item" onclick="goToSlide(5)"><i class="fa-solid fa-laptop-code"></i> 5. Simulasi Absen Pegawai</li>
+        <li class="slide-list-item" onclick="goToSlide(6)"><i class="fa-solid fa-network-wired"></i> 6. Alur Kerja Pegawai & Admin</li>
+        <li class="slide-list-item" onclick="goToSlide(7)"><i class="fa-solid fa-gears"></i> 7. Arsitektur & Teknologi</li>
+        <li class="slide-list-item" onclick="goToSlide(8)"><i class="fa-solid fa-database"></i> 8. Skema PostgreSQL Neon</li>
+        <li class="slide-list-item" onclick="goToSlide(9)"><i class="fa-solid fa-cloud-arrow-up"></i> 9. Panduan Deployment</li>
+        <li class="slide-list-item" onclick="goToSlide(10)"><i class="fa-solid fa-award"></i> 10. Kesimpulan & Manfaat</li>
+      </ul>
+    </aside>
+
+  </div>
+
+  <script>
+    /* ========================================================================
+       PRESENTATION DECK LOGIC SYSTEM
+       ======================================================================== */
+    let currentSlide = 1;
+    const totalSlides = 10;
+    
+    // Slide Navigation
+    function changeSlide(direction) {
+      const nextSlide = currentSlide + direction;
+      if (nextSlide >= 1 && nextSlide <= totalSlides) {
+        goToSlide(nextSlide);
+      }
+    }
+
+    function goToSlide(slideNum) {
+      // Find slides
+      const currentSlideEl = document.querySelector(`.slide[data-slide-id="${currentSlide}"]`);
+      const nextSlideEl = document.querySelector(`.slide[data-slide-id="${slideNum}"]`);
+      
+      if (!nextSlideEl) return;
+      
+      // Update Slide State Classes
+      if (currentSlideEl) {
+        currentSlideEl.classList.remove('active');
+        if (slideNum > currentSlide) {
+          currentSlideEl.classList.add('previous-slide');
+        } else {
+          currentSlideEl.classList.remove('previous-slide');
+        }
+      }
+      
+      // Reset previous classes for target slide if moving backward
+      if (slideNum < currentSlide) {
+        nextSlideEl.classList.remove('previous-slide');
+      }
+      
+      nextSlideEl.classList.add('active');
+      currentSlide = slideNum;
+      
+      // Update HUD Information
+      document.getElementById('current-slide-num').textContent = `${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+      
+      // Progress Bar
+      const progressPercent = ((currentSlide - 1) / (totalSlides - 1)) * 100;
+      document.getElementById('slide-progress-fill').style.width = `${progressPercent}%`;
+      
+      // Disable buttons if boundaries hit
+      document.getElementById('btn-prev-slide').disabled = (currentSlide === 1);
+      document.getElementById('btn-next-slide').disabled = (currentSlide === totalSlides);
+      
+      // Update active state in Sidebar List
+      const sidebarItems = document.querySelectorAll('.slide-list-item');
+      sidebarItems.forEach((item, idx) => {
+        if (idx + 1 === currentSlide) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+      
+      // Close sidebar if open
+      document.getElementById('sidebar-menu').classList.remove('active');
+      document.getElementById('sidebar-overlay').classList.remove('active');
+    }
+
+    // Interactive Sidebar Menu Toggle
+    function toggleSidebarMenu() {
+      const menu = document.getElementById('sidebar-menu');
+      const overlay = document.getElementById('sidebar-overlay');
+      menu.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+
+    // Keyboard Shortcuts Navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        changeSlide(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        changeSlide(-1);
+      } else if (e.key === 'Home') {
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        goToSlide(totalSlides);
+      }
+    });
+
+    // Touch Swipe Gestures support
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    
+    document.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+    
+    function handleSwipe() {
+      const threshold = 50; // swipe length in pixels
+      if (touchEndX < touchStartX - threshold) {
+        changeSlide(1); // Swiped Left -> Next Slide
+      }
+      if (touchEndX > touchStartX + threshold) {
+        changeSlide(-1); // Swiped Right -> Prev Slide
+      }
+    }
+
+    /* ========================================================================
+       SLIDE-SPECIFIC INTERACTIVE ACTIONS
+       ======================================================================== */
+    
+    // Slide 4: Feature Tabs switching
+    function switchFeatureTab(index) {
+      const tabBtns = document.querySelectorAll('.features-tab-btn');
+      const tabContents = document.querySelectorAll('.features-tab-content');
+      
+      tabBtns.forEach((btn, idx) => {
+        if (idx === index) {
+          btn.classList.add('active');
+          tabContents[idx].classList.add('active');
+        } else {
+          btn.classList.remove('active');
+          tabContents[idx].classList.remove('active');
+        }
+      });
+    }
+
+    // Slide 8: Database table display switching
+    function switchDbTable(index) {
+      const tableItems = document.querySelectorAll('.db-table-item');
+      const dbPanes = document.querySelectorAll('.db-pane');
+      
+      tableItems.forEach((item, idx) => {
+        if (idx === index) {
+          item.classList.add('active');
+          dbPanes[idx].classList.add('active');
+        } else {
+          item.classList.remove('active');
+          dbPanes[idx].classList.remove('active');
+        }
+      });
+    }
+
+    // Slide 9: Code Snippet setup switcher
+    function switchSetupTab(index) {
+      const tabBtns = document.querySelectorAll('.setup-tab-btn');
+      const codePanes = document.querySelectorAll('.setup-pane');
+      const codeFileName = document.getElementById('code-file-name');
+      
+      tabBtns.forEach((btn, idx) => {
+        if (idx === index) {
+          btn.classList.add('active');
+          codePanes[idx].classList.add('active');
+        } else {
+          btn.classList.remove('active');
+          codePanes[idx].classList.remove('active');
+        }
+      });
+      
+      if (index === 0) {
+        codeFileName.textContent = '.env.example';
+      } else {
+        codeFileName.textContent = 'api/setup.js';
+      }
+    }
+
+    /* ========================================================================
+       SLIDE 5: ATTENDANCE SIMULATION ENGINE
+       ======================================================================== */
+    let simStep = 0;
+    let simInterval = null;
+
+    function runAttendanceSimulation() {
+      const btn = document.getElementById('btn-sim-action');
+      const cam = document.getElementById('sim-cam-viewport');
+      const faceAvatar = document.getElementById('sim-face-avatar');
+      const msg = document.getElementById('sim-display-msg');
+      const badge = document.getElementById('sim-status-badge');
+      const logger = document.getElementById('sim-logger-box');
+      
+      // Reset simulator
+      btn.disabled = true;
+      logger.innerHTML = '';
+      simStep = 1;
+      
+      // Step 1: GPS Radius check
+      logSim('Initiating check-in sequence...', 'primary');
+      logSim('Reading HTML5 GPS coordinates...');
+      msg.textContent = 'Membaca sensor lokasi GPS perangkat...';
+      badge.textContent = 'Mencari GPS';
+      badge.className = 'sim-badge active';
+      
+      setTimeout(() => {
+        // Successful Geofence Check
+        logSim('GPS Coordinates: Latitude -0.62243, Longitude 114.59302');
+        logSim('Server distance check: 24 meters from office center.');
+        logSim('Geofencing validation PASSED (Within 150m radius).', 'success');
+        
+        document.getElementById('s-step-1').classList.remove('active');
+        document.getElementById('s-step-2').classList.add('active');
+        
+        // Move to Step 2: Camera biometrics
+        simStep = 2;
+        msg.textContent = 'Menghubungkan kamera & Mendeteksi Wajah...';
+        badge.textContent = 'Kamera Aktif';
+        cam.classList.add('active');
+        logSim('Accessing WebRTC camera stream...');
+        logSim('Executing Face-api.js model in browser...');
+        
+        setTimeout(() => {
+          logSim('Face detected. Extracting 128 landmarks...');
+          logSim('Matching face embedding with master database users.face_embedding...');
+          logSim('Confidence score: 98.4% MATCH.', 'success');
+          
+          document.getElementById('s-step-2').classList.remove('active');
+          document.getElementById('s-step-3').classList.add('active');
+          
+          // Move to Step 3: Liveness Challenge
+          simStep = 3;
+          msg.textContent = 'Tantangan Liveness: Silakan Kedipkan Mata Anda!';
+          badge.textContent = 'Liveness Challenge';
+          logSim('Liveness challenge triggered: Blink Challenge.');
+          
+          setTimeout(() => {
+            logSim('Eye state analysis: BLINK DETECTED.', 'success');
+            logSim('Liveness authentication passed. Subject verified ALIVE.', 'success');
+            
+            // Finalize check-in
+            simStep = 4;
+            msg.textContent = 'Absensi Berhasil Dicatat!';
+            badge.textContent = 'Absen Sukses';
+            badge.className = 'sim-badge success';
+            cam.classList.remove('active');
+            cam.classList.add('success');
+            logSim('Sending payload: { time: "07:44:12", status: "Hadir", gps: "-0.62243,114.59302" }');
+            logSim('POST /api/attendance -> Status 201 Created (Neon DB).', 'success');
+            logSim('PRESENSI BERHASIL DICATAT DI DATABASE.', 'success');
+            
+            // Reset Button
+            btn.disabled = false;
+            btn.textContent = 'Ulangi Simulasi Absen';
+            
+            setTimeout(() => {
+              // Reset step highlights after complete
+              document.getElementById('s-step-3').classList.remove('active');
+              document.getElementById('s-step-1').classList.add('active');
+            }, 3000);
+            
+          }, 2000);
+          
+        }, 2200);
+        
+      }, 1800);
+    }
+
+    function logSim(message, type = '') {
+      const logger = document.getElementById('sim-logger-box');
+      const line = document.createElement('div');
+      line.className = `sim-log-line ${type}`;
+      
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false, fractionSec: 3 });
+      line.textContent = `[${time}] ${message}`;
+      
+      logger.appendChild(line);
+      logger.scrollTop = logger.scrollHeight;
+    }
+  </script>
+</body>
+</html>

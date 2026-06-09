@@ -11,7 +11,7 @@ let OFFICE_LNG = parseFloat(localStorage.getItem("admin_office_lng")) || 114.589
 const OFFICE_RADIUS = 150; // meters
 
 let SHIFT_CONFIG = JSON.parse(localStorage.getItem("admin_shift_config")) || {
-  siang: { in: "08:00", out: "16:00" },
+  siang: { in: "08:00", out: "15:30" },
   malam: { in: "20:00", out: "04:00" }
 };
 
@@ -497,6 +497,9 @@ class AppDatabase {
         todayRecord.status = status;
       } else {
         todayRecord.check_out_time = timestampStr;
+        if (status === 'Pulang Sebelum Waktunya' || status === 'Luar Radius') {
+          todayRecord.status = status;
+        }
       }
     }
     this.save();
@@ -1701,6 +1704,19 @@ async function handleAttendanceCheck(type) {
       } else {
          if (currentMin > limitMin || currentMin < 300) statusStr = "Terlambat";
       }
+    } else if (checkType === 'out') {
+      const shift = state.currentUser.shift || 'siang';
+      const config = SHIFT_CONFIG[shift];
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const [limitH, limitM] = config.out.split(':').map(Number);
+      const limitMin = limitH * 60 + limitM;
+      
+      if (shift === 'siang') {
+         if (currentMin < limitMin) statusStr = "Pulang Sebelum Waktunya";
+      } else {
+         if (currentMin < limitMin && currentMin > 300) statusStr = "Pulang Sebelum Waktunya";
+      }
     }
   }
   
@@ -1824,7 +1840,7 @@ function renderEmployeeDashboardWidgets() {
     const ciTime = new Date(todayRecord.check_in_time);
     DOM.widgetCheckInTime.textContent = ciTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WIB";
     DOM.widgetCheckInStatus.textContent = todayRecord.status;
-    DOM.widgetCheckInStatus.className = `widget-badge ${todayRecord.status === 'Hadir' ? 'success' : (todayRecord.status === 'Terlambat' ? 'warning' : 'error')}`;
+    DOM.widgetCheckInStatus.className = `widget-badge ${todayRecord.status === 'Hadir' ? 'success' : (todayRecord.status === 'Terlambat' || todayRecord.status === 'Pulang Sebelum Waktunya' ? 'warning' : 'error')}`;
   } else {
     DOM.widgetCheckInTime.textContent = "-- : --";
     DOM.widgetCheckInStatus.textContent = "Belum Presensi";
@@ -1889,10 +1905,11 @@ function renderPersonalHistoryTimeline() {
     let statusLabel = log.status;
     let labelBadgeClass = log.status === 'Hadir' ? 'hadir' : 
                          (log.status === 'Terlambat' ? 'terlambat' : 
+                         (log.status === 'Pulang Sebelum Waktunya' ? 'terlambat' : 
                          (log.status === 'Izin' ? 'izin' : 
                          (log.status === 'Sakit' ? 'sakit' : 
                          (log.status === 'Cuti' ? 'cuti' : 
-                         (log.status === 'Mengantar Kepala Dinas' ? 'dinas' : 'radius-warning')))));
+                         (log.status === 'Mengantar Kepala Dinas' ? 'dinas' : 'radius-warning')))))));
     
     const item = document.createElement("div");
     item.className = `history-item ${statusClass}`;
@@ -2152,7 +2169,7 @@ function renderAdminRekapBulanan() {
           const inTime = new Date(att.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
           const outTime = att.check_out_time ? new Date(att.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
           
-          let inColor = att.status === 'Terlambat' ? 'var(--warning)' : (att.status === 'Hadir' ? 'var(--success)' : 'inherit');
+          let inColor = (att.status === 'Terlambat' || att.status === 'Pulang Sebelum Waktunya') ? 'var(--warning)' : (att.status === 'Hadir' ? 'var(--success)' : 'inherit');
           cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: var(--text-secondary)">${outTime}</span>`;
         }
       }
@@ -2206,10 +2223,11 @@ function renderAdminTable() {
       
       const badgeColor = log.status === 'Hadir' ? 'hadir' : 
                          (log.status === 'Terlambat' ? 'terlambat' : 
+                         (log.status === 'Pulang Sebelum Waktunya' ? 'terlambat' : 
                          (log.status === 'Izin' ? 'izin' : 
                          (log.status === 'Sakit' ? 'sakit' : 
                          (log.status === 'Cuti' ? 'cuti' : 
-                         (log.status === 'Mengantar Kepala Dinas' ? 'dinas' : 'radius-warning')))));
+                         (log.status === 'Mengantar Kepala Dinas' ? 'dinas' : 'radius-warning'))))));
       statusHtml = `<span class="status-tag ${badgeColor}">${log.status}</span>`;
       
       biometricsHtml = `<div class="biometric-score-badge" onclick="openPhotoViewerModal('${log.id}')"><i class="fa-solid fa-face-smile"></i> ${log.face_match}% Cocok</div>`;
@@ -3719,7 +3737,7 @@ function setupEventListeners() {
   if (DOM.btnSaveShiftConfig) {
     DOM.btnSaveShiftConfig.addEventListener('click', () => {
       SHIFT_CONFIG.siang.in = DOM.adminShiftSiangIn.value || "08:00";
-      SHIFT_CONFIG.siang.out = DOM.adminShiftSiangOut.value || "16:00";
+      SHIFT_CONFIG.siang.out = DOM.adminShiftSiangOut.value || "15:30";
       SHIFT_CONFIG.malam.in = DOM.adminShiftMalamIn.value || "20:00";
       SHIFT_CONFIG.malam.out = DOM.adminShiftMalamOut.value || "04:00";
       
