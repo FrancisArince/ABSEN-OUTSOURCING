@@ -2226,8 +2226,8 @@ function renderAdminRekapBulanan() {
           const inTime = new Date(att.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
           const outTime = att.check_out_time ? new Date(att.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
           
-          let inColor = (att.status === 'Terlambat') ? 'var(--warning)' : (att.status === 'Hadir' || att.status === 'Pulang Lebih Awal' ? 'var(--success)' : 'inherit');
-          let outColor = (att.status === 'Pulang Lebih Awal') ? 'var(--warning)' : (att.check_out_time ? 'var(--success)' : 'var(--text-secondary)');
+          let inColor = isLogLate(att) ? '#60a5fa' : (att.status === 'Hadir' || att.status === 'Pulang Lebih Awal' || att.status === 'Luar Radius' ? 'var(--success)' : 'inherit');
+          let outColor = isLogEarly(att) ? 'var(--warning)' : (att.check_out_time ? 'var(--success)' : 'var(--text-secondary)');
           cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: ${outColor}">${outTime}</span>`;
         }
       }
