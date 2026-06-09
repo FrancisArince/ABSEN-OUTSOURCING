@@ -497,7 +497,7 @@ class AppDatabase {
         todayRecord.status = status;
       } else {
         todayRecord.check_out_time = timestampStr;
-        if (status === 'Pulang Sebelum Waktunya' || status === 'Luar Radius') {
+        if (status === 'Pulang Lebih Awal' || status === 'Luar Radius') {
           todayRecord.status = status;
         }
       }
@@ -1713,9 +1713,9 @@ async function handleAttendanceCheck(type) {
       const limitMin = limitH * 60 + limitM;
       
       if (shift === 'siang') {
-         if (currentMin < limitMin) statusStr = "Pulang Sebelum Waktunya";
+         if (currentMin < limitMin) statusStr = "Pulang Lebih Awal";
       } else {
-         if (currentMin < limitMin && currentMin > 300) statusStr = "Pulang Sebelum Waktunya";
+         if (currentMin < limitMin && currentMin > 300) statusStr = "Pulang Lebih Awal";
       }
     }
   }
@@ -1840,7 +1840,7 @@ function renderEmployeeDashboardWidgets() {
     const ciTime = new Date(todayRecord.check_in_time);
     DOM.widgetCheckInTime.textContent = ciTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WIB";
     DOM.widgetCheckInStatus.textContent = todayRecord.status;
-    DOM.widgetCheckInStatus.className = `widget-badge ${todayRecord.status === 'Hadir' ? 'success' : (todayRecord.status === 'Terlambat' || todayRecord.status === 'Pulang Sebelum Waktunya' ? 'warning' : 'error')}`;
+    DOM.widgetCheckInStatus.className = `widget-badge ${todayRecord.status === 'Hadir' ? 'success' : (todayRecord.status === 'Terlambat' || todayRecord.status === 'Pulang Lebih Awal' ? 'warning' : 'error')}`;
   } else {
     DOM.widgetCheckInTime.textContent = "-- : --";
     DOM.widgetCheckInStatus.textContent = "Belum Presensi";
@@ -1905,7 +1905,7 @@ function renderPersonalHistoryTimeline() {
     let statusLabel = log.status;
     let labelBadgeClass = log.status === 'Hadir' ? 'hadir' : 
                          (log.status === 'Terlambat' ? 'terlambat' : 
-                         (log.status === 'Pulang Sebelum Waktunya' ? 'terlambat' : 
+                         (log.status === 'Pulang Lebih Awal' ? 'terlambat' : 
                          (log.status === 'Izin' ? 'izin' : 
                          (log.status === 'Sakit' ? 'sakit' : 
                          (log.status === 'Cuti' ? 'cuti' : 
@@ -2169,8 +2169,9 @@ function renderAdminRekapBulanan() {
           const inTime = new Date(att.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
           const outTime = att.check_out_time ? new Date(att.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
           
-          let inColor = (att.status === 'Terlambat' || att.status === 'Pulang Sebelum Waktunya') ? 'var(--warning)' : (att.status === 'Hadir' ? 'var(--success)' : 'inherit');
-          cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: var(--text-secondary)">${outTime}</span>`;
+          let inColor = (att.status === 'Terlambat') ? 'var(--warning)' : (att.status === 'Hadir' || att.status === 'Pulang Lebih Awal' ? 'var(--success)' : 'inherit');
+          let outColor = (att.status === 'Pulang Lebih Awal') ? 'var(--warning)' : (att.check_out_time ? 'var(--success)' : 'var(--text-secondary)');
+          cellContent = `<span style="color: ${inColor}">${inTime}</span><br><span style="color: ${outColor}">${outTime}</span>`;
         }
       }
       
@@ -2223,7 +2224,7 @@ function renderAdminTable() {
       
       const badgeColor = log.status === 'Hadir' ? 'hadir' : 
                          (log.status === 'Terlambat' ? 'terlambat' : 
-                         (log.status === 'Pulang Sebelum Waktunya' ? 'terlambat' : 
+                         (log.status === 'Pulang Lebih Awal' ? 'terlambat' : 
                          (log.status === 'Izin' ? 'izin' : 
                          (log.status === 'Sakit' ? 'sakit' : 
                          (log.status === 'Cuti' ? 'cuti' : 
@@ -3027,13 +3028,13 @@ window.exportRekapBulanan = function() {
           const outTime = att.check_out_time
             ? new Date(att.check_out_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
             : '-';
-          const isLate = att.status === 'Terlambat';
+          const isLateOrEarly = att.status === 'Terlambat' || att.status === 'Pulang Lebih Awal';
           row.push({
             content: `${inTime}\n${outTime}`,
             styles: {
               halign: 'center',
               fontSize: 6,
-              textColor: isLate ? [200, 100, 0] : [21, 128, 61],
+              textColor: isLateOrEarly ? [200, 100, 0] : [21, 128, 61],
               fillColor: isWeekendOrHoliday ? [240, 240, 240] : null,
               cellPadding: 1
             }
