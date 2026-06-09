@@ -2031,6 +2031,50 @@ function getFilteredAdminLogs() {
   return logs;
 }
 
+function isLogLate(log) {
+  if (log.status === 'Terlambat') return true;
+  if (!log.check_in_time) return false;
+  if (['Izin', 'Sakit', 'Cuti', 'Mengantar Kepala Dinas', 'Gagal Verifikasi'].includes(log.status)) return false;
+  
+  const emp = db.users.find(u => u.id === log.user_id);
+  const shift = emp ? (emp.shift || 'siang') : 'siang';
+  const config = SHIFT_CONFIG[shift];
+  if (!config) return false;
+  
+  const inTime = new Date(log.check_in_time);
+  const currentMin = inTime.getHours() * 60 + inTime.getMinutes();
+  const [limitH, limitM] = config.in.split(':').map(Number);
+  const limitMin = limitH * 60 + limitM;
+  
+  if (shift === 'siang') {
+    return currentMin > limitMin;
+  } else {
+    return currentMin > limitMin || currentMin < 300;
+  }
+}
+
+function isLogEarly(log) {
+  if (log.status === 'Pulang Lebih Awal') return true;
+  if (!log.check_out_time) return false;
+  if (['Izin', 'Sakit', 'Cuti', 'Mengantar Kepala Dinas', 'Gagal Verifikasi'].includes(log.status)) return false;
+  
+  const emp = db.users.find(u => u.id === log.user_id);
+  const shift = emp ? (emp.shift || 'siang') : 'siang';
+  const config = SHIFT_CONFIG[shift];
+  if (!config) return false;
+  
+  const outTime = new Date(log.check_out_time);
+  const currentMin = outTime.getHours() * 60 + outTime.getMinutes();
+  const [limitH, limitM] = config.out.split(':').map(Number);
+  const limitMin = limitH * 60 + limitM;
+  
+  if (shift === 'siang') {
+    return currentMin < limitMin;
+  } else {
+    return currentMin < limitMin && currentMin > 300;
+  }
+}
+
 function renderAdminDashboardKPIs() {
   const filteredLogs = getFilteredAdminLogs();
   const totalEmployees = db.users.filter(u => u.role === 'karyawan').length;
@@ -2042,13 +2086,13 @@ function renderAdminDashboardKPIs() {
   DOM.kpiPresentRate.textContent = `${presentRate}% Tingkat Kehadiran`;
   
   // Late counts
-  const lateCount = filteredLogs.filter(l => l.status === 'Terlambat').length;
+  const lateCount = filteredLogs.filter(l => isLogLate(l)).length;
   DOM.kpiLateCount.textContent = lateCount;
   const lateRate = filteredLogs.length > 0 ? Math.round((lateCount / filteredLogs.length) * 100) : 0;
   DOM.kpiLateRate.textContent = `${lateRate}% Dari yang hadir`;
 
   // Early leave counts
-  const earlyCount = filteredLogs.filter(l => l.status === 'Pulang Lebih Awal').length;
+  const earlyCount = filteredLogs.filter(l => isLogEarly(l)).length;
   if (DOM.kpiEarlyLeaveCount) {
     DOM.kpiEarlyLeaveCount.textContent = earlyCount;
     const earlyRate = filteredLogs.length > 0 ? Math.round((earlyCount / filteredLogs.length) * 100) : 0;
@@ -2099,8 +2143,8 @@ function renderAdminRekapJabatan() {
       const empLogs = filteredLogs.filter(log => log.user_id === emp.id);
       empLogs.forEach(log => {
         if (log.status === 'Hadir') totalHadir++;
-        if (log.status === 'Terlambat') totalTelat++;
-        if (log.status === 'Pulang Lebih Awal') totalPulangAwal++;
+        if (isLogLate(log)) totalTelat++;
+        if (isLogEarly(log)) totalPulangAwal++;
         if (log.status === 'Luar Radius' || log.status === 'Gagal Verifikasi') totalLuarRadius++;
       });
     });
@@ -2326,9 +2370,9 @@ function renderAdminCharts() {
   const filteredLogs = getFilteredAdminLogs();
   const totalEmployees = db.users.filter(u => u.role === 'karyawan').length;
   
-  const hadirCount = filteredLogs.filter(l => l.status === 'Hadir').length;
-  const lateCount = filteredLogs.filter(l => l.status === 'Terlambat').length;
-  const luarCount = filteredLogs.filter(l => l.status === 'Luar Radius').length;
+  const hadirCount = filteredLogs.filter(l => l.status === 'Hadir' && !isLogLate(l)).length;
+  const lateCount = filteredLogs.filter(l => isLogLate(l)).length;
+  const luarCount = filteredLogs.filter(l => (l.status === 'Luar Radius' || l.status === 'Gagal Verifikasi') && !isLogLate(l)).length;
   
   // For 'Belum Absen', it only makes sense if filtering by today. If multiple days or past dates, absent count logic gets complex. 
   // Let's approximate it for the chart: 
