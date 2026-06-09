@@ -1909,7 +1909,7 @@ function renderPersonalHistoryTimeline() {
                          (log.status === 'Izin' ? 'izin' : 
                          (log.status === 'Sakit' ? 'sakit' : 
                          (log.status === 'Cuti' ? 'cuti' : 
-                         (log.status === 'Mengantar Kepala Dinas' ? 'dinas' : 'radius-warning')))))));
+                         (log.status === 'Mengantar Kepala Dinas' ? 'dinas' : 'radius-warning'))))));
     
     const item = document.createElement("div");
     item.className = `history-item ${statusClass}`;
